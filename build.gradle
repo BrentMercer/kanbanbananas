@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.3.3'
 	id 'io.spring.dependency-management' version '1.1.6'
+	id 'com.github.node-gradle.node' version '3.5.0'
 }
 
 group = 'com.bjm'
@@ -38,6 +39,20 @@ dependencies {
 
 }
 
+node {
+	version = '22.8.0'
+	npmVersion = '10.8.2'
+	download = true
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+task buildFrontend(type: NpmTask) {
+	description = 'Builds the frontend React application'
+	group = 'build'
+	workingDir = file('frontend') // Set the working directory to the frontend directory
+	args = ['run', 'build']
+}
+
