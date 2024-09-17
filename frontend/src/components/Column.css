@@ -1,0 +1,19 @@
+
+.column {
+    flex: 1 1 auto;
+    min-width: 250px; /* Minimum column width */
+    width: 100%; /* Default width that adjusts based on available space */
+    /*max-width: 400px;*/
+    margin-right: 10px; /* Space between columns */
+    background-color: #f4f4f4;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    /*box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);*/
+}
+
+/* Optional: Customize h3 for column titles */
+.column h3 {
+    text-align: center;
+    margin-bottom: 15px;
+}

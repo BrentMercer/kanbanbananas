@@ -1,13 +1,32 @@
+.board-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+    padding: 10px;
+    background-color: #f0f0f0;
+}
+
 .board {
     display: flex;
     flex-direction: row;
-    overflow-x: scroll;
+    overflow-x: auto;
+    width: 100%;
+    gap: 5px;
 }
 
 .column {
-    flex: 1;
-    margin: 0 10px;
+    flex: 1 1 auto;
+    min-width: 250px;
+    width: 100%;
     padding: 10px;
+    margin-right: 10px;
     background-color: #f4f4f4;
-    border-radius: 5px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.column h3 {
+    text-align: center;
+    margin-bottom: 15px;
 }
