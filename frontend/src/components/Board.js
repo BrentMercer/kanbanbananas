@@ -1,38 +1,136 @@
-import React, { useState, useEffect } from 'react';
-import Task from './Task';
-import Column from "./Column";
+import React, { useState } from 'react';
+import Column from './Column';
 import './Board.css';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext } from 'react-beautiful-dnd';
+import SettingsModal from './SettingsModal';
+import CustomizeColumnsModal from './CustomizeColumnsModal';
+import NewTaskModal from './NewTaskModal';
 
 const Board = () => {
     const [columns, setColumns] = useState([
-        { id: '1', title: 'Column 1', tasks: ['Task 1', 'Task 2'] },
-        { id: '2', title: 'Column 2', tasks: ['Task 3'] },
+        { id: '1', title: 'Column 1', tasks: [] },
+        { id: '2', title: 'Column 2', tasks: [] },
         { id: '3', title: 'Column 3', tasks: [] },
-        { id: '4', title: 'Column 4', tasks: [] },
-        { id: '5', title: 'Column 5', tasks: [] }
     ]);
 
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false); // For settings modal
+    const [isCustomizeColumnsOpen, setIsCustomizeColumnsOpen] = useState(false); // For customize columns modal
+    const [isTaskModalOpen, setIsTaskModalOpen] = useState(false); // For new task modal
+    const [currentColumnId, setCurrentColumnId] = useState(null); // Track column for task modal
+
+    // Function to add a task to a column
+    const addTask = (columnId, newTask) => {
+        setColumns(columns.map(column =>
+            column.id === columnId
+                ? { ...column, tasks: [...column.tasks, newTask] }
+                : column
+        ));
+    };
+
+    // Open Task Modal
+    const openTaskModal = (columnId) => {
+        setCurrentColumnId(columnId);
+        setIsTaskModalOpen(true);
+    };
+
+    const onDragEnd = (result) => {
+        const { destination, source, draggableId } = result;
+
+        // If there is no destination (dropped outside the droppable area)
+        if (!destination) return;
+
+        // If the task is dropped in the same place, do nothing
+        if (
+            destination.droppableId === source.droppableId &&
+            destination.index === source.index
+        ) {
+            return;
+        }
+
+        // Find the source and destination columns
+        const sourceColumn = columns.find(column => column.id === source.droppableId);
+        const destinationColumn = columns.find(column => column.id === destination.droppableId);
+
+        // If the task is reordered within the same column
+        if (source.droppableId === destination.droppableId) {
+            const newTaskList = Array.from(sourceColumn.tasks);
+            const [movedTask] = newTaskList.splice(source.index, 1);
+            newTaskList.splice(destination.index, 0, movedTask);
+
+            const updatedColumns = columns.map(column =>
+                column.id === source.droppableId ? { ...column, tasks: newTaskList } : column
+            );
+            setColumns(updatedColumns);
+        } else {
+            // Moving the task to a different column
+            const sourceTaskList = Array.from(sourceColumn.tasks);
+            const destinationTaskList = Array.from(destinationColumn.tasks);
+            const [movedTask] = sourceTaskList.splice(source.index, 1);
+            destinationTaskList.splice(destination.index, 0, movedTask);
+
+            const updatedColumns = columns.map(column => {
+                if (column.id === source.droppableId) {
+                    return { ...column, tasks: sourceTaskList };
+                } else if (column.id === destination.droppableId) {
+                    return { ...column, tasks: destinationTaskList };
+                } else {
+                    return column;
+                }
+            });
+
+            setColumns(updatedColumns);
+        }
+    };
+
     return (
-        <div className="wrapper">
-            <h2>My Board</h2>
-            <div className="board-container">
+        <DragDropContext onDragEnd={onDragEnd}>
+        <div className="board-container">
                 <div className="board">
-                    {columns.map(column => (
-                        <div key={column.id} className="column">
-                            <h3>{column.title}</h3>
-                            {column.tasks.length > 0 ? (
-                                column.tasks.map((task, index) => (
-                                    <Task key={index} title={task} />
-                                ))
-                            ) : (
-                                <p>No tasks yet</p>
-                            )}
-                        </div>
+                    {columns.map((column) => (
+                        <Column
+                            key={column.id}
+                            column={column}
+                            tasks={column.tasks}
+                            openTaskModal={openTaskModal}
+                        />
                     ))}
                 </div>
+
+                {/* Settings Button */}
+                <button className="settings-button" onClick={() => setIsSettingsOpen(true)}>
+                    Settings
+                </button>
+
+                {/* Render the Settings modal */}
+                {isSettingsOpen && (
+                    <SettingsModal
+                        onClose={() => setIsSettingsOpen(false)}
+                        openCustomizeBoardModal={() => {
+                            setIsSettingsOpen(false); // Close settings
+                            setIsCustomizeColumnsOpen(true); // Open customize columns
+                        }}
+                    />
+                )}
+
+                {/* Render the Customize Columns modal */}
+                {isCustomizeColumnsOpen && (
+                    <CustomizeColumnsModal
+                        columns={columns}
+                        setColumns={setColumns}
+                        onClose={() => setIsCustomizeColumnsOpen(false)}
+                    />
+                )}
+
+                {/* Render the New Task modal */}
+                {isTaskModalOpen && (
+                    <NewTaskModal
+                        columnId={currentColumnId}
+                        addTask={addTask}
+                        onClose={() => setIsTaskModalOpen(false)}
+                    />
+                )}
             </div>
-        </div>
+        </DragDropContext>
     );
 };
 

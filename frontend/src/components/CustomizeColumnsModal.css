@@ -1,0 +1,41 @@
+.customize-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.customize-modal {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 100%;
+}
+
+.column-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.column-item {
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin-bottom: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.close-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 4px;
+}

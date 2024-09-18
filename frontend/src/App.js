@@ -1,35 +1,29 @@
-import React, {Component} from "react";
+import React, {Component, useState, useEffect} from "react";
 import Board from './components/Board';
+import SettingsModal from "./components/SettingsModal";
+import './App.css';
 
-class App extends Component{
-  state = {
-    boards: [
-      {
-        id: 1,
-        title: "Work projects"
-      },
-      {
-        id: 2,
-        title: "Personal projects"
-      },
-      {
-        id: 3,
-        title: "Kids projects"
-      }
-    ]
-  }
+const App = () => {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false); // State to manage settings modal
 
-
-
-  render() {
-    console.log(this.state.boards);
-    return (
-        <div className="App">
+  return (
+      <div className="app-container">
           <h1>Easy Kanban</h1>
-          <Board />
-        </div>
-    );
-  }
-}
+
+        {/* Settings Button at the top right */}
+        <button className="settings-button" onClick={() => setIsSettingsOpen(true)}>
+          Settings
+        </button>
+
+        {/* Main Board */}
+        <Board />
+
+        {/* Render the Settings modal when it is open */}
+        {isSettingsOpen && (
+            <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+        )}
+      </div>
+  );
+};
 
 export default App;
