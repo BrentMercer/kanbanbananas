@@ -1,7 +1,8 @@
 import React from 'react';
 import { Droppable, Draggable } from 'react-beautiful-dnd';
 
-const Column = ({ column, tasks, openTaskModal }) => {
+
+const Column = ({ column, tasks, openTaskModal, openTaskDetailModal  }) => {
     return (
         <div className="column">
             <div className="column-header">
@@ -26,6 +27,8 @@ const Column = ({ column, tasks, openTaskModal }) => {
                                         ref={provided.innerRef}
                                         {...provided.draggableProps}
                                         {...provided.dragHandleProps}
+                                        onClick={() => openTaskDetailModal(task)}
+                                        style={{ cursor: 'pointer' }}
                                     >
                                         <h4>{task.title}</h4>
                                         <p>{task.details}</p>

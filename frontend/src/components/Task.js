@@ -5,7 +5,6 @@ import { Draggable } from 'react-beautiful-dnd';
 const Task = ({ task, index }) => {
     console.log("Task ID:", task.id);
     return (
-        <div className="task-card">
         <Draggable draggableId={task.id} index={index}>
             {(provided) => (
                 <div
@@ -18,7 +17,6 @@ const Task = ({ task, index }) => {
                 </div>
             )}
         </Draggable>
-        </div>
     );
 };
 

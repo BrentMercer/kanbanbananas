@@ -20,14 +20,15 @@
 
 .new-task-modal input,
 .new-task-modal textarea {
-    width: 100%;
+    width: 97%;
     margin-bottom: 10px;
     padding: 8px;
     border-radius: 4px;
     border: 1px solid #ccc;
 }
 .new-task-modal textarea{
-    height: 100px;
+    height: 100%;
+    min-height: 100px;
 }
 
 .close-button {

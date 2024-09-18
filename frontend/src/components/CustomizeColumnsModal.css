@@ -31,6 +31,9 @@
     justify-content: space-between;
 }
 
+.column-item input{
+    width: 100%;
+}
 .close-button {
     background-color: #007bff;
     color: #fff;

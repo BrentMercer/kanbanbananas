@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import './CustomizeColumnsModal.css';
+import dragIcon from './images/drag-resized.png';
 
 const CustomizeColumnsModal = ({ columns, onClose, setColumns }) => {
     const [newColumnName, setNewColumnName] = useState('');
@@ -61,6 +62,9 @@ const CustomizeColumnsModal = ({ columns, onClose, setColumns }) => {
                                                 {...provided.draggableProps}
                                                 {...provided.dragHandleProps}
                                             >
+                                                <div className="drag-icon">
+                                                    <img src={dragIcon} alt="Drag Icon" />
+                                                </div>
                                                 <input
                                                     type="text"
                                                     value={column.title}

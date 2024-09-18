@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import Column from './Column';
-import './Board.css';
 import { DragDropContext } from 'react-beautiful-dnd';
+import Column from './Column';
 import SettingsModal from './SettingsModal';
 import CustomizeColumnsModal from './CustomizeColumnsModal';
 import NewTaskModal from './NewTaskModal';
+import TaskDetailModal from "./TaskDetailModal.js";
+import './Board.css';
+import './Column.css';
+import './Task.css';
+import './TaskDetailModal.css';
 
 const Board = () => {
     const [columns, setColumns] = useState([
@@ -13,10 +17,11 @@ const Board = () => {
         { id: '3', title: 'Column 3', tasks: [] },
     ]);
 
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false); // For settings modal
-    const [isCustomizeColumnsOpen, setIsCustomizeColumnsOpen] = useState(false); // For customize columns modal
-    const [isTaskModalOpen, setIsTaskModalOpen] = useState(false); // For new task modal
-    const [currentColumnId, setCurrentColumnId] = useState(null); // Track column for task modal
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isCustomizeColumnsOpen, setIsCustomizeColumnsOpen] = useState(false);
+    const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+    const [currentColumnId, setCurrentColumnId] = useState(null);
+    const [selectedTask, setSelectedTask] = useState(null);
 
     // Function to add a task to a column
     const addTask = (columnId, newTask) => {
@@ -33,8 +38,31 @@ const Board = () => {
         setIsTaskModalOpen(true);
     };
 
+    // Open Task Detail Modal
+    const openTaskDetailModal = (task) => {
+        setSelectedTask(task);
+    };
+
+    // Edit Task (opens task modal with existing data)
+    const editTask = (task) => {
+        setSelectedTask(null);
+        const columnId = columns.find(col => col.tasks.some(t => t.id === task.id)).id;
+        setCurrentColumnId(columnId);
+        setIsTaskModalOpen(true);
+    };
+
+
+    // Delete Task
+    const deleteTask = (taskId) => {
+        setColumns(columns.map(column => ({
+            ...column,
+            tasks: column.tasks.filter(task => task.id !== taskId)
+        })));
+        setSelectedTask(null);
+    };
+
     const onDragEnd = (result) => {
-        const { destination, source, draggableId } = result;
+        const { destination, source } = result;
 
         // If there is no destination (dropped outside the droppable area)
         if (!destination) return;
@@ -92,6 +120,7 @@ const Board = () => {
                             column={column}
                             tasks={column.tasks}
                             openTaskModal={openTaskModal}
+                            openTaskDetailModal={openTaskDetailModal}
                         />
                     ))}
                 </div>
@@ -121,14 +150,28 @@ const Board = () => {
                     />
                 )}
 
-                {/* Render the New Task modal */}
-                {isTaskModalOpen && (
-                    <NewTaskModal
-                        columnId={currentColumnId}
-                        addTask={addTask}
-                        onClose={() => setIsTaskModalOpen(false)}
-                    />
-                )}
+            {/* Render the New Task modal */}
+            {isTaskModalOpen && (
+                <NewTaskModal
+                    columnId={currentColumnId}
+                    addTask={addTask}
+                    task={selectedTask} // If selectedTask exists, it's an edit
+                    onClose={() => {
+                        setIsTaskModalOpen(false);
+                        setSelectedTask(null); // Clear selected task after closing
+                    }}
+                />
+            )}
+
+            {/* Render the Task Detail modal */}
+            {selectedTask && (
+                <TaskDetailModal
+                    task={selectedTask}
+                    onClose={() => setSelectedTask(null)}
+                    onEdit={editTask}
+                    onDelete={deleteTask}
+                />
+            )}
             </div>
         </DragDropContext>
     );

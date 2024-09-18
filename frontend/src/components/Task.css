@@ -1,11 +1,12 @@
 .task {
-    background-color: #f4f4f4;
+    background-color: #fff;
     border: 1px solid #ccc;
     border-radius: 4px;
     padding: 10px;
     margin-bottom: 10px;
-    text-align: center;
+    /*text-align: center;*/
 }
-.task-card{
-    background-color: red;
+.task h4,
+.task p {
+    margin: 0;
 }

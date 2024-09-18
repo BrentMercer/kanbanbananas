@@ -10,14 +10,20 @@
     border-radius: 8px;
 }
 
+.column-header{
+    display: flex;
+}
 .column h3 {
-    text-align: center;
     margin-bottom: 15px;
 }
-
-.task-list {
-    min-height: 150px;
-    background-color: #f8f8f8;
-    padding: 10px;
-    border: 1px dashed #ccc;
+.column-header h3,
+.column-header button{
+    flex: auto;
 }
+.column-header button{
+    max-height: 24px;
+    max-width: 24px;
+    align-self: center;
+}
+
+
