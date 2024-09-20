@@ -1,21 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, memo } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import './NewTaskModal.css';
 
-const NewTaskModal = ({ columnId, onClose, addTask }) => {
+const NewTaskModal = ({ columnId, addTask, task, onClose  }) => {
     const [title, setTitle] = useState('');
     const [details, setDetails] = useState('');
 
-    const handleAddTask = () => {
+    useEffect(() => {
+        console.log("Task received in modal:", task);
+        if (task) {
+            setTitle(task.title || '');
+            setDetails(task.details || '');
+        } else {
+            setTitle('');
+            setDetails('');
+        }
+    }, [task]);
+
+
+
+
+    const handleSaveTask = () => {
         if (title.trim()) {
-            addTask(columnId, { id: `task-${Date.now()}`, title, details });
-            onClose(); // Close the modal after adding the task
+            if (task) {
+                // Edit existing task
+                const updatedTask = { ...task, title, details };
+                addTask(columnId, updatedTask);
+            } else {
+                // Create new task with a unique ID
+                const newTask = { id: `task-${Date.now()}`, title, details };
+                addTask(columnId, newTask);
+            }
+            onClose();
         }
     };
+
+
+
 
     return (
         <div className="new-task-overlay">
             <div className="new-task-modal">
-                <h2>Add New Task</h2>
+                <h2>{task ? 'Edit Task' : 'Add New Task'}</h2>
                 <input
                     type="text"
                     value={title}
@@ -27,7 +53,7 @@ const NewTaskModal = ({ columnId, onClose, addTask }) => {
                     onChange={(e) => setDetails(e.target.value)}
                     placeholder="Task Details"
                 />
-                <button onClick={handleAddTask}>Add Task</button>
+                <button onClick={handleSaveTask}>{task ? 'Save Changes' : 'Add Task'}</button>
                 <button className="close-button" onClick={onClose}>
                     Cancel
                 </button>

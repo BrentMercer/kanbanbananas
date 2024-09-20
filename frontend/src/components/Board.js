@@ -12,9 +12,9 @@ import './TaskDetailModal.css';
 
 const Board = () => {
     const [columns, setColumns] = useState([
-        { id: '1', title: 'Column 1', tasks: [] },
-        { id: '2', title: 'Column 2', tasks: [] },
-        { id: '3', title: 'Column 3', tasks: [] },
+        { id: '1', title: 'Column 1', tasks: [{ id: '0', title: 'task 0', details: 'test details' }, { id: '1', title: 'task 1', details: 'test details' }] },
+        { id: '2', title: 'Column 2', tasks: [{ id: '2', title: 'task 2', details: 'test details' }, { id: '3', title: 'task 3', details: 'test details' }] },
+        { id: '3', title: 'Column 3', tasks: [{ id: '4', title: 'task 4', details: 'test details' }] }
     ]);
 
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -23,36 +23,48 @@ const Board = () => {
     const [currentColumnId, setCurrentColumnId] = useState(null);
     const [selectedTask, setSelectedTask] = useState(null);
 
-    // Function to add a task to a column
     const addTask = (columnId, newTask) => {
-        setColumns(columns.map(column =>
-            column.id === columnId
-                ? { ...column, tasks: [...column.tasks, newTask] }
-                : column
-        ));
+        console.log("Task being added/updated:", newTask);
+        setColumns(prevColumns => prevColumns.map(column => {
+            if (column.id === columnId) {
+                const taskExists = column.tasks.some(task => task.id === newTask.id);
+                if (taskExists) {
+                    const updatedTasks = column.tasks.map(task => task.id === newTask.id ? { ...task, ...newTask } : task);
+                    return { ...column, tasks: updatedTasks };
+                } else {
+                    return { ...column, tasks: [...column.tasks, newTask] };
+                }
+            }
+            return column;
+        }));
     };
 
-    // Open Task Modal
     const openTaskModal = (columnId) => {
         setCurrentColumnId(columnId);
+        setSelectedTask(null);
         setIsTaskModalOpen(true);
     };
 
-    // Open Task Detail Modal
     const openTaskDetailModal = (task) => {
         setSelectedTask(task);
     };
 
-    // Edit Task (opens task modal with existing data)
     const editTask = (task) => {
-        setSelectedTask(null);
+        console.log("Editing task:", task);
         const columnId = columns.find(col => col.tasks.some(t => t.id === task.id)).id;
-        setCurrentColumnId(columnId);
-        setIsTaskModalOpen(true);
+        setColumns(prevColumns => {
+            const updatedColumns = prevColumns.map(column => {
+                if (column.id === columnId) {
+                    const updatedTasks = column.tasks.map(t => t.id === task.id ? task : t);
+                    return { ...column, tasks: updatedTasks };
+                }
+                return column;
+            });
+            return [...updatedColumns];
+        });
+        setIsTaskModalOpen(false);
     };
 
-
-    // Delete Task
     const deleteTask = (taskId) => {
         setColumns(columns.map(column => ({
             ...column,
@@ -61,25 +73,29 @@ const Board = () => {
         setSelectedTask(null);
     };
 
-    const onDragEnd = (result) => {
-        const { destination, source } = result;
+    // Add logs for drag lifecycle methods
+    const onDragStart = (result) => {
+        console.log("Drag started:", result);
+    };
 
-        // If there is no destination (dropped outside the droppable area)
+    const onDragUpdate = (result) => {
+        console.log("Drag update:", result);
+    };
+
+    const onDragEnd = (result) => {
+        const { destination, source, draggableId } = result;
+        console.log("onDragEnd triggered:", result);
+
         if (!destination) return;
 
-        // If the task is dropped in the same place, do nothing
-        if (
-            destination.droppableId === source.droppableId &&
-            destination.index === source.index
-        ) {
+        if (destination.droppableId === source.droppableId && destination.index === source.index) {
+            console.log("No change in task position");
             return;
         }
 
-        // Find the source and destination columns
         const sourceColumn = columns.find(column => column.id === source.droppableId);
         const destinationColumn = columns.find(column => column.id === destination.droppableId);
 
-        // If the task is reordered within the same column
         if (source.droppableId === destination.droppableId) {
             const newTaskList = Array.from(sourceColumn.tasks);
             const [movedTask] = newTaskList.splice(source.index, 1);
@@ -90,7 +106,6 @@ const Board = () => {
             );
             setColumns(updatedColumns);
         } else {
-            // Moving the task to a different column
             const sourceTaskList = Array.from(sourceColumn.tasks);
             const destinationTaskList = Array.from(destinationColumn.tasks);
             const [movedTask] = sourceTaskList.splice(source.index, 1);
@@ -105,14 +120,19 @@ const Board = () => {
                     return column;
                 }
             });
-
             setColumns(updatedColumns);
         }
     };
 
+    console.log("Task being passed to modal:", selectedTask);
+
     return (
-        <DragDropContext onDragEnd={onDragEnd}>
-        <div className="board-container">
+        <DragDropContext
+            onDragStart={onDragStart}
+            onDragUpdate={onDragUpdate}
+            onDragEnd={onDragEnd}
+        >
+            <div className="board-container">
                 <div className="board">
                     {columns.map((column) => (
                         <Column
@@ -125,23 +145,20 @@ const Board = () => {
                     ))}
                 </div>
 
-                {/* Settings Button */}
                 <button className="settings-button" onClick={() => setIsSettingsOpen(true)}>
                     Settings
                 </button>
 
-                {/* Render the Settings modal */}
                 {isSettingsOpen && (
                     <SettingsModal
                         onClose={() => setIsSettingsOpen(false)}
                         openCustomizeBoardModal={() => {
-                            setIsSettingsOpen(false); // Close settings
-                            setIsCustomizeColumnsOpen(true); // Open customize columns
+                            setIsSettingsOpen(false);
+                            setIsCustomizeColumnsOpen(true);
                         }}
                     />
                 )}
 
-                {/* Render the Customize Columns modal */}
                 {isCustomizeColumnsOpen && (
                     <CustomizeColumnsModal
                         columns={columns}
@@ -150,28 +167,26 @@ const Board = () => {
                     />
                 )}
 
-            {/* Render the New Task modal */}
-            {isTaskModalOpen && (
-                <NewTaskModal
-                    columnId={currentColumnId}
-                    addTask={addTask}
-                    task={selectedTask} // If selectedTask exists, it's an edit
-                    onClose={() => {
-                        setIsTaskModalOpen(false);
-                        setSelectedTask(null); // Clear selected task after closing
-                    }}
-                />
-            )}
+                {isTaskModalOpen && (
+                    <NewTaskModal
+                        columnId={currentColumnId}
+                        addTask={addTask}
+                        task={selectedTask}
+                        onClose={() => {
+                            setIsTaskModalOpen(false);
+                            setSelectedTask(null);
+                        }}
+                    />
+                )}
 
-            {/* Render the Task Detail modal */}
-            {selectedTask && (
-                <TaskDetailModal
-                    task={selectedTask}
-                    onClose={() => setSelectedTask(null)}
-                    onEdit={editTask}
-                    onDelete={deleteTask}
-                />
-            )}
+                {selectedTask && (
+                    <TaskDetailModal
+                        task={selectedTask}
+                        onClose={() => setSelectedTask(null)}
+                        onEdit={editTask}
+                        onDelete={deleteTask}
+                    />
+                )}
             </div>
         </DragDropContext>
     );

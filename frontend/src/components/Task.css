@@ -4,7 +4,8 @@
     border-radius: 4px;
     padding: 10px;
     margin-bottom: 10px;
-    /*text-align: center;*/
+    z-index: 1000;
+    cursor: grab;
 }
 .task h4,
 .task p {

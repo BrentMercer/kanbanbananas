@@ -61,3 +61,7 @@
 .settings-button:hover {
   background-color: #0056b3;
 }
+.header-section{
+  position: fixed;
+  width: 100%;
+}

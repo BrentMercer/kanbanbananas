@@ -54,3 +54,16 @@
     border-radius: 4px;
     margin-top: 10px;
 }
+.new-task-modal-input,
+.new-task-modal-textarea {
+    width: 97%;
+    margin-bottom: 10px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.new-task-modal-textarea {
+    height: 100%;
+    min-height: 100px;
+}

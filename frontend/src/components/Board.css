@@ -10,7 +10,7 @@
 .board {
     display: flex;
     flex-direction: row;
-    overflow-x: auto;
+    /*overflow-x: auto;*/
     width: 100%;
     gap: 5px;
 }

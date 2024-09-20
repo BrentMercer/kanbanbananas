@@ -13,7 +13,9 @@ const Task = ({ task, index }) => {
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
                 >
-                    {task.content}
+                    <h4>{task.title}</h4>
+                    <p>{task.details}</p>
+
                 </div>
             )}
         </Draggable>

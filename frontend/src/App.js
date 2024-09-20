@@ -8,20 +8,16 @@ const App = () => {
 
   return (
       <div className="app-container">
-          <h1>Easy Kanban</h1>
-
-        {/* Settings Button at the top right */}
-        <button className="settings-button" onClick={() => setIsSettingsOpen(true)}>
-          Settings
-        </button>
-
-        {/* Main Board */}
-        <Board />
-
-        {/* Render the Settings modal when it is open */}
-        {isSettingsOpen && (
-            <SettingsModal onClose={() => setIsSettingsOpen(false)} />
-        )}
+          <div className="header-section">
+              <h1>Easy Kanban</h1>
+              <button className="settings-button" onClick={() => setIsSettingsOpen(true)}>
+                  Settings
+              </button>
+              <Board />
+              {isSettingsOpen && (
+                  <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+              )}
+          </div>
       </div>
   );
 };
