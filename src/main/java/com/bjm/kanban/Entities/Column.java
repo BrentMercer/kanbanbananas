@@ -3,11 +3,12 @@ package com.bjm.kanban.Entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.List;
 
-@Entity
 @Getter
-@Table(name = "task")
-public class Task {
+@Entity
+@Table(name = "board_columns")
+public class Column {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,13 +17,13 @@ public class Task {
     private String title;
 
     @Setter
-    private String details;
-
-    @Setter
     private int orderIndex = 0;
 
     @ManyToOne
-    @JoinColumn(name = "column_id", nullable = false)
-    private Column column;
+    @JoinColumn(name = "board_id", nullable = false)
+    @Setter
+    private Board board;
 
+    @OneToMany(mappedBy = "column", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Task> tasks;
 }

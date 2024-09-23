@@ -32,9 +32,8 @@ public class TaskService {
 
     public Task updateTask(Long id, Task taskDetails) {
         Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Task not found"));
-        task.setName(taskDetails.getName());
-        task.setStatus(taskDetails.getStatus());
-        task.setDescription(taskDetails.getDescription());
+        task.setTitle(taskDetails.getTitle());
+        task.setDetails(taskDetails.getDetails());
         return taskRepository.save(task);
     }
 
