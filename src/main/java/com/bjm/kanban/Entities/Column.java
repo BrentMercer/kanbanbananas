@@ -1,9 +1,9 @@
 package com.bjm.kanban.Entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -12,6 +12,8 @@ import java.util.List;
 @Getter
 @Entity
 @Table(name = "board_columns")
+@NoArgsConstructor
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class Column {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +28,7 @@ public class Column {
     @ManyToOne
     @JoinColumn(name = "board_id", nullable = false)
     @Setter
-    @JsonBackReference
+    @JsonIgnoreProperties("columns")
     private Board board;
 
     @OneToMany(mappedBy = "column", cascade = CascadeType.ALL, orphanRemoval = true)

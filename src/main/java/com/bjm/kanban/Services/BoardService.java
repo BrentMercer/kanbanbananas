@@ -1,14 +1,17 @@
 package com.bjm.kanban.Services;
 
+import com.bjm.kanban.DTO.ColumnDTO;
 import com.bjm.kanban.Entities.Board;
 import com.bjm.kanban.Entities.Column;
 import com.bjm.kanban.Entities.Task;
 import com.bjm.kanban.Repository.BoardRepository;
 import com.bjm.kanban.Repository.ColumnRepository;
 import com.bjm.kanban.Repository.TaskRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class BoardService {
@@ -22,46 +25,48 @@ public class BoardService {
     @Autowired
     private TaskRepository taskRepository;
 
+    private static final Logger logger = LoggerFactory.getLogger(BoardService.class);
+
+
     public Board getBoardWithColumnsAndTasks(Long boardId) {
-        return boardRepository.findById(boardId).orElse(null);
+        return boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Board not found with id: " + boardId));
     }
 
     public Column addColumnToBoard(Long boardId, Column column) {
-        Board board = boardRepository.findById(boardId).orElse(null);
-        if (board != null) {
-            column.setBoard(board);
-            return columnRepository.save(column);
-        }
-        return null;
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Board not found with id: " + boardId));
+        column.setBoard(board);
+        return columnRepository.save(column);
     }
 
-    // Update a column
-    public Column updateColumn(Long columnId, Column updatedColumn) {
+    public Column updateColumn(Long columnId, ColumnDTO updatedColumn) {
+        logger.info("Received request to update column with ID: {}", columnId);
+        logger.info("Updated column details: {}", updatedColumn);
         return columnRepository.findById(columnId)
                 .map(existingColumn -> {
                     existingColumn.setTitle(updatedColumn.getTitle());
                     existingColumn.setOrderIndex(updatedColumn.getOrderIndex());
                     return columnRepository.save(existingColumn);
                 })
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Column not found with id: " + columnId));
     }
 
-    // Delete a column
     public void deleteColumn(Long columnId) {
-        columnRepository.deleteById(columnId);
-    }
-
-    // Add a task to a column
-    public Task addTaskToColumn(Long columnId, Task task) {
-        Column column = columnRepository.findById(columnId).orElse(null);
-        if (column != null) {
-            task.setColumn(column);
-            return taskRepository.save(task);
+        if (columnRepository.existsById(columnId)) {
+            columnRepository.deleteById(columnId);
+        } else {
+            throw new ResourceNotFoundException("Column not found with id: " + columnId);
         }
-        return null;
     }
 
-    // Update a task
+    public Task addTaskToColumn(Long columnId, Task task) {
+        Column column = columnRepository.findById(columnId)
+                .orElseThrow(() -> new ResourceNotFoundException("Column not found with id: " + columnId));
+        task.setColumn(column);
+        return taskRepository.save(task);
+    }
+
     public Task updateTask(Long taskId, Task updatedTask) {
         return taskRepository.findById(taskId)
                 .map(existingTask -> {
@@ -70,11 +75,14 @@ public class BoardService {
                     existingTask.setOrderIndex(updatedTask.getOrderIndex());
                     return taskRepository.save(existingTask);
                 })
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
     }
 
-    // Delete a task
     public void deleteTask(Long taskId) {
-        taskRepository.deleteById(taskId);
+        if (taskRepository.existsById(taskId)) {
+            taskRepository.deleteById(taskId);
+        } else {
+            throw new ResourceNotFoundException("Task not found with id: " + taskId);
+        }
     }
 }

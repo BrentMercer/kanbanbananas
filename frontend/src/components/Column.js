@@ -12,7 +12,7 @@ const Column = ({ column, tasks, openTaskModal, openTaskDetailModal }) => {
                 <button className="add-task-button" onClick={() => openTaskModal(column.id)}>+</button>
             </div>
 
-            <Droppable droppableId={column.id}>
+            <Droppable droppableId={String(column.id)}>
                 {(provided, snapshot) => {
                     console.log("Is dragging over column", column.id, ":", snapshot.isDraggingOver);
                     return (

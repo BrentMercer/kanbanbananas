@@ -1,5 +1,6 @@
 package com.bjm.kanban.Controller;
 
+import com.bjm.kanban.DTO.ColumnDTO;
 import com.bjm.kanban.Entities.Board;
 import com.bjm.kanban.Entities.Column;
 import com.bjm.kanban.Entities.Task;
@@ -28,28 +29,29 @@ public class BoardController {
     }
 
     // Add a new column to a board
-    @PostMapping("/{boardId}/columns")
+    @PostMapping("/{boardId}/board_columns")
     public ResponseEntity<Column> addColumnToBoard(@PathVariable Long boardId, @RequestBody Column column) {
         Column createdColumn = boardService.addColumnToBoard(boardId, column);
         return new ResponseEntity<>(createdColumn, HttpStatus.CREATED);
     }
 
     // Update a column
-    @PutMapping("/columns/{columnId}")
-    public ResponseEntity<Column> updateColumn(@PathVariable Long columnId, @RequestBody Column updatedColumn) {
+    @PutMapping("/board_columns/{columnId}")
+    public ResponseEntity<Column> updateColumn(@PathVariable Long columnId, @RequestBody ColumnDTO updatedColumn) {
+        System.out.println("Received ColumnDTO: " + updatedColumn);
         Column column = boardService.updateColumn(columnId, updatedColumn);
         return column != null ? new ResponseEntity<>(column, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     // Delete a column
-    @DeleteMapping("/columns/{columnId}")
+    @DeleteMapping("/board_columns/{columnId}")
     public ResponseEntity<Void> deleteColumn(@PathVariable Long columnId) {
         boardService.deleteColumn(columnId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     // Add a new task to a column
-    @PostMapping("/columns/{columnId}/tasks")
+    @PostMapping("/board_columns/{columnId}/tasks")
     public ResponseEntity<Task> addTaskToColumn(@PathVariable Long columnId, @RequestBody Task task) {
         Task createdTask = boardService.addTaskToColumn(columnId, task);
         return new ResponseEntity<>(createdTask, HttpStatus.CREATED);

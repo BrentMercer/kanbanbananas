@@ -13,6 +13,7 @@ import './TaskDetailModal.css';
 
 const Board = () => {
     const [columns, setColumns] = useState([]);
+
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isCustomizeColumnsOpen, setIsCustomizeColumnsOpen] = useState(false);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -22,12 +23,22 @@ const Board = () => {
     useEffect(() => {
         axios.get('/boards/1')
             .then(response => {
-                setColumns(response.data.columns);
+                console.log("Fetched Board Data:", response.data)
+                const fetchedColumns = response.data.columns.map((column) => ({
+                    ...column,
+                    id: column.id.toString(),
+                    tasks: column.tasks.map((task) => ({
+                        ...task,
+                        id: task.id.toString(),
+                    })),
+                }));
+                setColumns(fetchedColumns);
             })
             .catch(error => {
                 console.error('Error fetching board data:', error);
             });
     }, []);
+
 
     const addTask = function (columnId, newTask) {
         console.log("Task being added/updated:", newTask);

@@ -14,22 +14,18 @@ public class ColumnService {
     @Autowired
     private ColumnRepository columnRepository;
 
-    // Get all columns
     public List<Column> getAllColumns() {
         return columnRepository.findAll();
     }
 
-    // Get a column by ID
     public Optional<Column> getColumnById(Long id) {
         return columnRepository.findById(id);
     }
 
-    // Create or update a column
     public Column saveColumn(Column column) {
         return columnRepository.save(column);
     }
 
-    // Delete a column by ID
     public void deleteColumn(Long id) {
         columnRepository.deleteById(id);
     }
