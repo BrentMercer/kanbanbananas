@@ -49,10 +49,22 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-task buildFrontend(type: NpmTask) {
+tasks.register('buildFrontend', NpmTask) {
 	description = 'Builds the frontend React application'
 	group = 'build'
-	workingDir = file('frontend') // Set the working directory to the frontend directory
+	workingDir = file('frontend')
 	args = ['run', 'build']
 }
 
+tasks.register('buildReact', Exec) {
+	workingDir 'frontend'
+	commandLine 'C:/Program Files/nodejs/npm.cmd', 'run', 'build'
+}
+
+tasks.register('copyReactBuild', Copy) {
+	dependsOn buildReact
+	from 'frontend/build'
+	into 'src/main/resources/static'
+}
+
+processResources.dependsOn copyReactBuild

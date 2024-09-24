@@ -1,6 +1,9 @@
 package com.bjm.kanban.Services;
 
+import com.bjm.kanban.DTO.TaskDTO;
+import com.bjm.kanban.Entities.Column;
 import com.bjm.kanban.Entities.Task;
+import com.bjm.kanban.Repository.ColumnRepository;
 import com.bjm.kanban.Repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -18,15 +21,30 @@ public class TaskService {
         this.taskRepository = taskRepository;
     }
 
+    @Autowired
+    private ColumnRepository columnRepository;
+
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
     }
 
-    public Task getTaskById(Long id) {
-        return taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+    public TaskDTO getTaskById(Long id) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Task not found"));
+
+        return new TaskDTO(task.getId(), task.getTitle(), task.getDetails(), task.getColumn().getId());
     }
 
-    public Task createTask(Task task) {
+
+    public Task createTask(TaskDTO taskDTO) {
+        Column column = columnRepository.findById(taskDTO.getColumnId())
+                .orElseThrow(() -> new ResourceNotFoundException("Column not found"));
+
+        Task task = new Task();
+        task.setTitle(taskDTO.getTitle());
+        task.setDetails(taskDTO.getDetails());
+        task.setColumn(column);
+
         return taskRepository.save(task);
     }
 

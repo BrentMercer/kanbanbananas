@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect  } from 'react';
+import axios from 'axios';
 import { DragDropContext } from 'react-beautiful-dnd';
 import Column from './Column';
 import SettingsModal from './SettingsModal';
@@ -11,37 +12,22 @@ import './Task.css';
 import './TaskDetailModal.css';
 
 const Board = () => {
-    const [columns, setColumns] = useState([
-        {
-            id: '1',
-            title: 'Column 1',
-            tasks: [
-                { id: '0', title: 'task 0', details: 'test details' },
-                { id: '1', title: 'task 1', details: 'test details' }
-            ]
-        },
-        {
-            id: '2',
-            title: 'Column 2',
-            tasks: [
-                { id: '2', title: 'task 2', details: 'test details' },
-                { id: '3', title: 'task 3', details: 'test details' }
-            ]
-        },
-        {
-            id: '3',
-            title: 'Column 3',
-            tasks: [
-                { id: '4', title: 'task 4', details: 'test details' }
-            ]
-        }
-    ]);
-
+    const [columns, setColumns] = useState([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isCustomizeColumnsOpen, setIsCustomizeColumnsOpen] = useState(false);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [currentColumnId, setCurrentColumnId] = useState(null);
     const [selectedTask, setSelectedTask] = useState(null);
+
+    useEffect(() => {
+        axios.get('/boards/1')
+            .then(response => {
+                setColumns(response.data.columns);
+            })
+            .catch(error => {
+                console.error('Error fetching board data:', error);
+            });
+    }, []);
 
     const addTask = function (columnId, newTask) {
         console.log("Task being added/updated:", newTask);

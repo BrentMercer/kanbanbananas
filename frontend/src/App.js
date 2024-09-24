@@ -3,6 +3,7 @@ import Board from './components/Board';
 import SettingsModal from "./components/SettingsModal";
 import './App.css';
 
+
 const App = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false); // State to manage settings modal
 
