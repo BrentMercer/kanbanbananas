@@ -22,25 +22,29 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<Task> getAllTasks() {
-        return taskService.getAllTasks();
+    public ResponseEntity<List<Task>> getAllTasks() {
+        List<Task> tasks = taskService.getAllTasks();
+        return new ResponseEntity<>(tasks, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public TaskDTO getTaskById(@PathVariable Long id) {
-        return taskService.getTaskById(id);
+    public ResponseEntity<TaskDTO> getTaskById(@PathVariable Long id) {
+        TaskDTO task = taskService.getTaskById(id);
+        return task != null ? new ResponseEntity<>(task, HttpStatus.OK)
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-
 
     @PostMapping
-    public Task createTask(@RequestBody TaskDTO taskDTO) {
-        return taskService.createTask(taskDTO);
+    public ResponseEntity<Task> createTask(@RequestBody TaskDTO taskDTO) {
+        Task createdTask = taskService.createTask(taskDTO);
+        return new ResponseEntity<>(createdTask, HttpStatus.CREATED);
     }
 
-
     @PutMapping("/{id}")
-    public Task updateTask(@PathVariable Long id, @RequestBody Task taskDetails) {
-        return taskService.updateTask(id, taskDetails);
+    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody TaskDTO taskDTO) {
+        Task updatedTask = taskService.updateTask(id, taskDTO);
+        return updatedTask != null ? new ResponseEntity<>(updatedTask, HttpStatus.OK)
+                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @DeleteMapping("/{id}")
@@ -49,11 +53,18 @@ public class TaskController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<Task> addTask(@RequestBody TaskDTO taskDTO) {
-        Task task = taskService.createTask(taskDTO);
+    @PostMapping("/{columnId}/tasks")
+    public ResponseEntity<Task> addTaskToColumn(@PathVariable Long columnId, @RequestBody TaskDTO taskDTO) {
+        Task task = taskService.createTaskForColumn(columnId, taskDTO);
         return new ResponseEntity<>(task, HttpStatus.CREATED);
     }
+
+
+//    @PostMapping("/add")
+//    public ResponseEntity<Task> addTask(@RequestBody TaskDTO taskDTO) {
+//        Task task = taskService.createTask(taskDTO);
+//        return new ResponseEntity<>(task, HttpStatus.CREATED);
+//    }
 
 
 

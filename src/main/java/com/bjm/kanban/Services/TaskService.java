@@ -10,19 +10,21 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
 
+    @Autowired
     private final TaskRepository taskRepository;
+
+    @Autowired
+    private ColumnRepository columnRepository;
 
     @Autowired
     public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
-
-    @Autowired
-    private ColumnRepository columnRepository;
 
     public List<Task> getAllTasks() {
         return taskRepository.findAll();
@@ -32,7 +34,18 @@ public class TaskService {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
-        return new TaskDTO(task.getId(), task.getTitle(), task.getDetails(), task.getColumn().getId());
+        return new TaskDTO(task.getId(), task.getTitle(), task.getDetails(), task.getColumn().getId(), task.getOrderIndex());
+    }
+
+
+    public List<TaskDTO> getTasksByColumnId(Long columnId) {
+        Column column = columnRepository.findById(columnId)
+                .orElseThrow(() -> new ResourceNotFoundException("Column not found"));
+
+        List<Task> tasks = taskRepository.findByColumn(column);
+        return tasks.stream()
+                .map(task -> new TaskDTO(task.getId(), task.getTitle(), task.getDetails(), task.getColumn().getId(), task.getOrderIndex()))
+                .collect(Collectors.toList());
     }
 
 
@@ -48,16 +61,35 @@ public class TaskService {
         return taskRepository.save(task);
     }
 
-    public Task updateTask(Long id, Task taskDetails) {
+    public Task updateTask(Long id, TaskDTO taskDTO) {
         Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Task not found"));
-        task.setTitle(taskDetails.getTitle());
-        task.setDetails(taskDetails.getDetails());
+        task.setTitle(taskDTO.getTitle());
+        task.setDetails(taskDTO.getDetails());
         return taskRepository.save(task);
     }
 
     public void deleteTask(Long id) {
         Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Task not found"));
         taskRepository.delete(task);
+    }
+
+    public Task addTaskToColumn(Long columnId, Task task) {
+        Column column = columnRepository.findById(columnId).orElseThrow(() -> new ResourceNotFoundException("Column not found"));
+        task.setColumn(column);
+        return taskRepository.save(task);
+    }
+
+    public Task createTaskForColumn(Long columnId, TaskDTO taskDTO) {
+        Column column = columnRepository.findById(columnId)
+                .orElseThrow(() -> new ResourceNotFoundException("Column not found"));
+
+        Task task = new Task();
+        task.setTitle(taskDTO.getTitle());
+        task.setDetails(taskDTO.getDetails());
+        task.setOrderIndex(taskDTO.getOrderIndex());
+        task.setColumn(column);
+
+        return taskRepository.save(task);
     }
 }
 

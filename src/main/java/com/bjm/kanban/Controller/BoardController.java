@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/boards")
 public class BoardController {
@@ -28,14 +30,20 @@ public class BoardController {
         }
     }
 
-    // Add a new column to a board
-    @PostMapping("/{boardId}/board_columns")
-    public ResponseEntity<Column> addColumnToBoard(@PathVariable Long boardId, @RequestBody Column column) {
-        Column createdColumn = boardService.addColumnToBoard(boardId, column);
+
+    @PostMapping(value = "/{boardId}/board_columns", consumes = "application/json", produces = "application/json")
+    public ResponseEntity<Column> addColumnToBoard(@PathVariable Long boardId, @RequestBody ColumnDTO columnDTO) {
+        Column createdColumn = boardService.addColumnToBoard(boardId, columnDTO);
         return new ResponseEntity<>(createdColumn, HttpStatus.CREATED);
     }
 
-    // Update a column
+    @GetMapping("/{boardId}/board_columns")
+    public ResponseEntity<List<Column>> getColumnsForBoard(@PathVariable Long boardId) {
+        List<Column> columns = boardService.getColumnsForBoard(boardId);
+        return new ResponseEntity<>(columns, HttpStatus.OK);
+    }
+
+
     @PutMapping("/board_columns/{columnId}")
     public ResponseEntity<Column> updateColumn(@PathVariable Long columnId, @RequestBody ColumnDTO updatedColumn) {
         System.out.println("Received ColumnDTO: " + updatedColumn);

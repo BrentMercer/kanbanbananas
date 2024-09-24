@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class BoardService {
 
@@ -33,12 +35,24 @@ public class BoardService {
                 .orElseThrow(() -> new ResourceNotFoundException("Board not found with id: " + boardId));
     }
 
-    public Column addColumnToBoard(Long boardId, Column column) {
+    public Column addColumnToBoard(Long boardId, ColumnDTO columnDTO) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Board not found with id: " + boardId));
+
+        Column column = new Column();
+        column.setTitle(columnDTO.getTitle());
+        column.setOrderIndex(columnDTO.getOrderIndex());
         column.setBoard(board);
+
         return columnRepository.save(column);
     }
+
+    public List<Column> getColumnsForBoard(Long boardId) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Board not found"));
+        return board.getColumns();
+    }
+
 
     public Column updateColumn(Long columnId, ColumnDTO updatedColumn) {
         logger.info("Received request to update column with ID: {}", columnId);

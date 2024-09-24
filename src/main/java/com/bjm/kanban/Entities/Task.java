@@ -22,7 +22,7 @@ public class Task {
     @Setter
     private int orderIndex = 0;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "column_id", nullable = false)
     @Setter
     @JsonBackReference

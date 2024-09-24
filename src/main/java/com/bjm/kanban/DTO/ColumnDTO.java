@@ -5,6 +5,13 @@ public class ColumnDTO {
     private String title;
     private int orderIndex;
 
+    public ColumnDTO() {}
+
+    public ColumnDTO(String title, int orderIndex) {
+        this.title = title;
+        this.orderIndex = orderIndex;
+    }
+
     public ColumnDTO(Long id, String title, int orderIndex) {
         this.id = id;
         this.title = title;
