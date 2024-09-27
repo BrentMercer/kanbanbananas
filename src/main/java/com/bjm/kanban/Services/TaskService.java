@@ -56,17 +56,29 @@ public class TaskService {
         Task task = new Task();
         task.setTitle(taskDTO.getTitle());
         task.setDetails(taskDTO.getDetails());
+        task.setOrderIndex(taskDTO.getOrderIndex());
         task.setColumn(column);
 
         return taskRepository.save(task);
     }
 
+
     public Task updateTask(Long id, TaskDTO taskDTO) {
-        Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
         task.setTitle(taskDTO.getTitle());
         task.setDetails(taskDTO.getDetails());
+        
+        if (taskDTO.getColumnId() != null && !task.getColumn().getId().equals(taskDTO.getColumnId())) {
+            Column newColumn = columnRepository.findById(taskDTO.getColumnId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Column not found"));
+            task.setColumn(newColumn);
+        }
+
         return taskRepository.save(task);
     }
+
 
     public void deleteTask(Long id) {
         Task task = taskRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Task not found"));
@@ -74,7 +86,8 @@ public class TaskService {
     }
 
     public Task addTaskToColumn(Long columnId, Task task) {
-        Column column = columnRepository.findById(columnId).orElseThrow(() -> new ResourceNotFoundException("Column not found"));
+        Column column = columnRepository.findById(columnId)
+                .orElseThrow(() -> new ResourceNotFoundException("Column not found"));
         task.setColumn(column);
         return taskRepository.save(task);
     }

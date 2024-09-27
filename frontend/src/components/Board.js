@@ -43,6 +43,35 @@ const Board = () => {
     const addTask = function (columnId, newTask) {
         console.log("Task being added/updated:", newTask);
 
+        const targetColumn = columns.find(column => column.id === columnId);
+        const newOrderIndex = targetColumn.tasks.length;
+
+        axios.post(`/tasks`, {
+            title: newTask.title,
+            details: newTask.details,
+            orderIndex: newOrderIndex,
+            columnId: columnId,
+        })
+            .then((response) => {
+                const createdTask = response.data;
+                console.log("Task created successfully in the backend:", createdTask);
+
+                setColumns(function (prevColumns) {
+                    return prevColumns.map(function (column) {
+                        if (column.id === columnId) {
+                            return {
+                                ...column,
+                                tasks: [...column.tasks, createdTask],
+                            };
+                        }
+                        return column;
+                    });
+                });
+            })
+            .catch((error) => {
+                console.error("Error creating task in the backend:", error);
+            });
+
         setColumns(function (prevColumns) {
             return prevColumns.map(function (column) {
                 if (column.id === columnId) {
@@ -67,6 +96,7 @@ const Board = () => {
             });
         });
     };
+
 
     const openTaskModal = function (columnId) {
         setCurrentColumnId(columnId);
@@ -148,9 +178,32 @@ const Board = () => {
             return column.id === destination.droppableId;
         });
 
+        console.log("Source Column:", sourceColumn);
+        console.log("Destination Column:", destinationColumn);
+
+        const movedTask = sourceColumn.tasks[source.index];
+        console.log("Task being moved:", movedTask);
+
+        const updatedTask = {
+            ...movedTask,
+            columnId: destinationColumn.id,
+            orderIndex: destination.index,
+        };
+
+        console.log("Updated Task being sent to the backend:", updatedTask);
+
+        axios.put(`/tasks/${movedTask.id}`, updatedTask)
+            .then(response => {
+                console.log("Axios Request Body:", updatedTask);
+                console.log("Task updated successfully in the backend:", response.data);
+            })
+            .catch(error => {
+                console.error("Error updating task in the backend:", error.response ? error.response.data : error.message);
+            });
+
         if (source.droppableId === destination.droppableId) {
             const newTaskList = Array.from(sourceColumn.tasks);
-            const movedTask = newTaskList.splice(source.index, 1)[0];
+            newTaskList.splice(source.index, 1);
             newTaskList.splice(destination.index, 0, movedTask);
 
             const updatedColumns = columns.map(function (column) {
@@ -163,7 +216,7 @@ const Board = () => {
         } else {
             const sourceTaskList = Array.from(sourceColumn.tasks);
             const destinationTaskList = Array.from(destinationColumn.tasks);
-            const movedTask = sourceTaskList.splice(source.index, 1)[0];
+            sourceTaskList.splice(source.index, 1);
             destinationTaskList.splice(destination.index, 0, movedTask);
 
             const updatedColumns = columns.map(function (column) {
