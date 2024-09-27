@@ -13,12 +13,13 @@ import './TaskDetailModal.css';
 
 const Board = () => {
     const [columns, setColumns] = useState([]);
-
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isCustomizeColumnsOpen, setIsCustomizeColumnsOpen] = useState(false);
     const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     const [currentColumnId, setCurrentColumnId] = useState(null);
     const [selectedTask, setSelectedTask] = useState(null);
+    const [reRenderKey, setReRenderKey] = useState(0);
+
 
     useEffect(() => {
         axios.get('/boards/1')
@@ -39,6 +40,10 @@ const Board = () => {
             });
     }, []);
 
+    useEffect(() => {
+        console.log("Columns state updated:", columns);
+    }, [columns]);
+
 
     const addTask = function (columnId, newTask) {
         console.log("Task being added/updated:", newTask);
@@ -53,7 +58,7 @@ const Board = () => {
             columnId: columnId,
         })
             .then((response) => {
-                const createdTask = response.data;
+                const createdTask = response.data; // Task with valid ID from backend
                 console.log("Task created successfully in the backend:", createdTask);
 
                 setColumns(function (prevColumns) {
@@ -61,40 +66,18 @@ const Board = () => {
                         if (column.id === columnId) {
                             return {
                                 ...column,
-                                tasks: [...column.tasks, createdTask],
+                                tasks: [...column.tasks, createdTask], // Properly using backend response
                             };
                         }
                         return column;
                     });
                 });
+                window.location.reload();
+                setReRenderKey(prevKey => prevKey + 1); // Trigger re-render
             })
             .catch((error) => {
                 console.error("Error creating task in the backend:", error);
             });
-
-        setColumns(function (prevColumns) {
-            return prevColumns.map(function (column) {
-                if (column.id === columnId) {
-                    const taskExists = column.tasks.some(function (task) {
-                        return task.id === newTask.id;
-                    });
-
-                    if (taskExists) {
-                        const updatedTasks = column.tasks.map(function (task) {
-                            if (task.id === newTask.id) {
-                                return Object.assign({}, task, newTask);
-                            } else {
-                                return task;
-                            }
-                        });
-                        return Object.assign({}, column, { tasks: updatedTasks });
-                    } else {
-                        return Object.assign({}, column, { tasks: column.tasks.concat(newTask) });
-                    }
-                }
-                return column;
-            });
-        });
     };
 
 
@@ -170,19 +153,47 @@ const Board = () => {
             return;
         }
 
-        const sourceColumn = columns.find(function (column) {
-            return column.id === source.droppableId;
-        });
-
-        const destinationColumn = columns.find(function (column) {
-            return column.id === destination.droppableId;
-        });
+        const sourceColumn = columns.find(column => column.id === source.droppableId);
+        const destinationColumn = columns.find(
+            column => column.id === destination.droppableId
+        );
 
         console.log("Source Column:", sourceColumn);
         console.log("Destination Column:", destinationColumn);
 
         const movedTask = sourceColumn.tasks[source.index];
         console.log("Task being moved:", movedTask);
+
+        const newDestinationTaskList = Array.from(destinationColumn.tasks);
+
+        // If moving within the same column
+        if (source.droppableId === destination.droppableId) {
+            // Remove the task from the source index
+            newDestinationTaskList.splice(source.index, 1);
+            // Insert it into the new index
+            newDestinationTaskList.splice(destination.index, 0, movedTask);
+        } else {
+            // Moving between columns: Remove from source and insert into destination
+            const newSourceTaskList = Array.from(sourceColumn.tasks);
+            newSourceTaskList.splice(source.index, 1);
+            newDestinationTaskList.splice(destination.index, 0, movedTask);
+
+            // Update state for source column
+            setColumns(columns.map(column => {
+                if (column.id === source.droppableId) {
+                    return { ...column, tasks: newSourceTaskList };
+                } else if (column.id === destination.droppableId) {
+                    return { ...column, tasks: newDestinationTaskList };
+                }
+                return column;
+            }));
+        }
+
+        // Recalculate the orderIndex for tasks in the destination column
+        const reorderedTasks = newDestinationTaskList.map((task, index) => ({
+            ...task,
+            orderIndex: index,
+        }));
 
         const updatedTask = {
             ...movedTask,
@@ -235,6 +246,7 @@ const Board = () => {
 
     return (
         <DragDropContext
+            key={reRenderKey}
             onDragStart={onDragStart}
             onDragUpdate={onDragUpdate}
             onDragEnd={onDragEnd}

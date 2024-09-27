@@ -11,6 +11,7 @@ import java.util.List;
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
     List<Task> findByColumn(Column column);
+    List<Task> findByColumnIdOrderByOrderIndex(Long columnId);
 
 }
 

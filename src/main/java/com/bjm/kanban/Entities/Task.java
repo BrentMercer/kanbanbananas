@@ -20,7 +20,7 @@ public class Task {
     private String details;
 
     @Setter
-    private int orderIndex = 0;
+    private int orderIndex;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "column_id", nullable = false)
