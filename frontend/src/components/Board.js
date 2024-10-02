@@ -10,6 +10,8 @@ import './Board.css';
 import './Column.css';
 import './Task.css';
 import './TaskDetailModal.css';
+import taskService from '../services/taskService.js';
+import boardService from '../services/boardService.js';
 
 const Board = () => {
     const [columns, setColumns] = useState([]);
@@ -66,32 +68,21 @@ const Board = () => {
                         if (column.id === columnId) {
                             return {
                                 ...column,
-                                tasks: [...column.tasks, createdTask], // Properly using backend response
+                                tasks: [...column.tasks, createdTask],
                             };
                         }
                         return column;
                     });
                 });
                 window.location.reload();
-                setReRenderKey(prevKey => prevKey + 1); // Trigger re-render
+                setReRenderKey(prevKey => prevKey + 1);
             })
             .catch((error) => {
                 console.error("Error creating task in the backend:", error);
             });
     };
 
-
-    const openTaskModal = function (columnId) {
-        setCurrentColumnId(columnId);
-        setSelectedTask(null);
-        setIsTaskModalOpen(true);
-    };
-
-    const openTaskDetailModal = function (task) {
-        setSelectedTask(task);
-    };
-
-    const editTask = function (task) {
+    const editTask = async function (task) {
         console.log("Editing task:", task);
         const columnId = columns.find(function (col) {
             return col.tasks.some(function (t) {
@@ -113,21 +104,52 @@ const Board = () => {
                 }
                 return column;
             });
-            return updatedColumns.slice(); // returning a new array with updated columns
+            return updatedColumns.slice();
         });
+
+        try {
+            console.log("Saving task with updated details:", task);
+            await taskService.updateTask(task.id, task);
+            console.log("Task updated successfully.");
+        } catch (error) {
+            console.error("Error updating task:", error);
+        }
+
         setIsTaskModalOpen(false);
     };
 
     const deleteTask = function (taskId) {
-        setColumns(columns.map(function (column) {
-            return Object.assign({}, column, {
-                tasks: column.tasks.filter(function (task) {
-                    return task.id !== taskId;
-                })
+        console.log("Deleting task with ID:", taskId);
+
+        taskService.deleteTask(taskId)
+            .then(() => {
+                console.log("Task deleted successfully from the backend");
+
+                setColumns((prevColumns) => {
+                    return prevColumns.map((column) => ({
+                        ...column,
+                        tasks: column.tasks.filter((task) => task.id !== taskId),
+                    }));
+                });
+            })
+            .catch((error) => {
+                console.error("Error deleting task from the backend:", error);
             });
-        }));
-        setSelectedTask(null);
+
     };
+
+
+    const openTaskModal = function (columnId) {
+        setCurrentColumnId(columnId);
+        setSelectedTask(null);
+        setIsTaskModalOpen(true);
+    };
+
+    const openTaskDetailModal = (task) => {
+        console.log("Opening Task Detail Modal for task:", task);
+        setSelectedTask(task);
+    };
+
 
     const onDragStart = function (result) {
         console.log("Drag started:", result);
@@ -142,8 +164,6 @@ const Board = () => {
         const source = result.source;
         const draggableId = result.draggableId;
 
-        console.log("onDragEnd triggered:", result);
-
         if (!destination) {
             return;
         }
@@ -153,46 +173,71 @@ const Board = () => {
             return;
         }
 
-        const sourceColumn = columns.find(column => column.id === source.droppableId);
+        const sourceColumn = columns.find(
+            column => column.id === source.droppableId
+        );
         const destinationColumn = columns.find(
             column => column.id === destination.droppableId
         );
 
-        console.log("Source Column:", sourceColumn);
-        console.log("Destination Column:", destinationColumn);
-
         const movedTask = sourceColumn.tasks[source.index];
-        console.log("Task being moved:", movedTask);
 
-        const newDestinationTaskList = Array.from(destinationColumn.tasks);
+        const newSourceTaskList = Array.from(sourceColumn.tasks);
+        newSourceTaskList.splice(source.index, 1);
 
-        // If moving within the same column
         if (source.droppableId === destination.droppableId) {
-            // Remove the task from the source index
-            newDestinationTaskList.splice(source.index, 1);
-            // Insert it into the new index
-            newDestinationTaskList.splice(destination.index, 0, movedTask);
-        } else {
-            // Moving between columns: Remove from source and insert into destination
-            const newSourceTaskList = Array.from(sourceColumn.tasks);
-            newSourceTaskList.splice(source.index, 1);
-            newDestinationTaskList.splice(destination.index, 0, movedTask);
+            newSourceTaskList.splice(destination.index, 0, movedTask);
 
-            // Update state for source column
+            const reorderedTasks = newSourceTaskList.map((task, index) => ({
+                ...task,
+                orderIndex: index,
+            }));
+
             setColumns(columns.map(column => {
                 if (column.id === source.droppableId) {
-                    return { ...column, tasks: newSourceTaskList };
-                } else if (column.id === destination.droppableId) {
-                    return { ...column, tasks: newDestinationTaskList };
+                    return { ...column, tasks: reorderedTasks };
                 }
                 return column;
             }));
+
+            const updatedTask = {
+                ...movedTask,
+                orderIndex: destination.index,
+            };
+
+            console.log("Updated Task being reordered within the same column:", updatedTask);
+
+            taskService.updateTask(movedTask.id, updatedTask)
+                .then(response => {
+                    console.log("Task reordered successfully in the backend:", response.data);
+                })
+                .catch(error => {
+                    console.error("Error reordering task:", error.response ? error.response.data : error.message);
+                });
+
+            return;
         }
 
-        // Recalculate the orderIndex for tasks in the destination column
-        const reorderedTasks = newDestinationTaskList.map((task, index) => ({
+        const newDestinationTaskList = Array.from(destinationColumn.tasks);
+        newDestinationTaskList.splice(destination.index, 0, movedTask);
+
+        const reorderedSourceTasks = newSourceTaskList.map((task, index) => ({
             ...task,
             orderIndex: index,
+        }));
+
+        const reorderedDestinationTasks = newDestinationTaskList.map((task, index) => ({
+            ...task,
+            orderIndex: index,
+        }));
+
+        setColumns(columns.map(column => {
+            if (column.id === source.droppableId) {
+                return { ...column, tasks: reorderedSourceTasks };
+            } else if (column.id === destination.droppableId) {
+                return { ...column, tasks: reorderedDestinationTasks };
+            }
+            return column;
         }));
 
         const updatedTask = {
@@ -201,46 +246,19 @@ const Board = () => {
             orderIndex: destination.index,
         };
 
-        console.log("Updated Task being sent to the backend:", updatedTask);
+        console.log("Updated Task being moved to another column:", updatedTask);
 
-        axios.put(`/tasks/${movedTask.id}`, updatedTask)
+        taskService.updateTask(movedTask.id, updatedTask)
             .then(response => {
-                console.log("Axios Request Body:", updatedTask);
-                console.log("Task updated successfully in the backend:", response.data);
+                console.log("Task moved successfully in the backend:", response.data);
             })
             .catch(error => {
-                console.error("Error updating task in the backend:", error.response ? error.response.data : error.message);
+                console.error("Error moving task:", error.response ? error.response.data : error.message);
             });
 
-        if (source.droppableId === destination.droppableId) {
-            const newTaskList = Array.from(sourceColumn.tasks);
-            newTaskList.splice(source.index, 1);
-            newTaskList.splice(destination.index, 0, movedTask);
-
-            const updatedColumns = columns.map(function (column) {
-                if (column.id === source.droppableId) {
-                    return Object.assign({}, column, { tasks: newTaskList });
-                }
-                return column;
-            });
-            setColumns(updatedColumns);
-        } else {
-            const sourceTaskList = Array.from(sourceColumn.tasks);
-            const destinationTaskList = Array.from(destinationColumn.tasks);
-            sourceTaskList.splice(source.index, 1);
-            destinationTaskList.splice(destination.index, 0, movedTask);
-
-            const updatedColumns = columns.map(function (column) {
-                if (column.id === source.droppableId) {
-                    return Object.assign({}, column, { tasks: sourceTaskList });
-                } else if (column.id === destination.droppableId) {
-                    return Object.assign({}, column, { tasks: destinationTaskList });
-                }
-                return column;
-            });
-            setColumns(updatedColumns);
-        }
+        console.log("Calling updateTask with ID:", movedTask.id, "and data:", updatedTask);
     };
+
 
     console.log("Task being passed to modal:", selectedTask);
 
@@ -303,7 +321,7 @@ const Board = () => {
                 {selectedTask && (
                     <TaskDetailModal
                         task={selectedTask}
-                        onClose={function () { setSelectedTask(null); }}
+                        onClose={() => setSelectedTask(null)}
                         onEdit={editTask}
                         onDelete={deleteTask}
                     />

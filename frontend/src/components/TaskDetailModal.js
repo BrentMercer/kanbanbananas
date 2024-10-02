@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './TaskDetailModal.css';
 
 const TaskDetailModal = ({ task, onClose, onEdit, onDelete }) => {
@@ -7,13 +7,22 @@ const TaskDetailModal = ({ task, onClose, onEdit, onDelete }) => {
     const [editedDetails, setEditedDetails] = useState(task.details);
     const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
-    // Save changes and exit edit mode
-    const handleSave = () => {
+    useEffect(() => {
+        setEditedTitle(task.title);
+        setEditedDetails(task.details);
+    }, [task]);
+
+    const handleSave = async  () => {
+        if (!editedTitle.trim() || !editedDetails.trim()) {
+            alert("Task title and details cannot be empty.");
+            return;
+        }
         const updatedTask = { ...task, title: editedTitle, details: editedDetails };
-        onEdit(updatedTask);
-        // setIsEditMode(false);
+        console.log("Saving task with updated details:", updatedTask);
+        await onEdit(updatedTask);
         onClose();
     };
+
 
     // Handle task deletion
     const handleDelete = () => {

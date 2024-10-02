@@ -17,7 +17,6 @@ public class TaskDTO {
         this.orderIndex = orderIndex;
     }
 
-    // Constructor without id
     public TaskDTO(String title, String details, Long columnId, int orderIndex) {
         this.title = title;
         this.details = details;

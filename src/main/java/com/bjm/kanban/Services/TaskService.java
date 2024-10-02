@@ -49,7 +49,6 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
-
     public Task createTask(TaskDTO taskDTO) {
         Column column = columnRepository.findById(taskDTO.getColumnId())
                 .orElseThrow(() -> new ResourceNotFoundException("Column not found"));
@@ -76,6 +75,7 @@ public class TaskService {
                     .orElseThrow(() -> new ResourceNotFoundException("Column not found"));
             task.setColumn(newColumn);
         }
+        task.setOrderIndex(taskDTO.getOrderIndex());
 
         return taskRepository.save(task);
     }
@@ -110,43 +110,104 @@ public class TaskService {
     public Task moveTask(Long taskId, Long newColumnId, int newOrderIndex) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
+
         Column sourceColumn = task.getColumn();
         Column destinationColumn = columnRepository.findById(newColumnId)
                 .orElseThrow(() -> new ResourceNotFoundException("Destination column not found"));
 
-        // If task is moving within the same column
+        System.out.println("Task being moved: " + task.getTitle() + ", current orderIndex: " + task.getOrderIndex());
+
         if (sourceColumn.getId().equals(destinationColumn.getId())) {
-            List<Task> tasksInSameColumn = taskRepository.findByColumnIdOrderByOrderIndex(sourceColumn.getId());
-
-            // Recalculate orderIndex for all tasks in the same column
-            tasksInSameColumn.remove(task);  // Remove the task from its old position
-            tasksInSameColumn.add(newOrderIndex, task);  // Add it to its new position
-
-            for (int i = 0; i < tasksInSameColumn.size(); i++) {
-                tasksInSameColumn.get(i).setOrderIndex(i);
-            }
+            System.out.println("Task is moving within the same column");
+            reorderTasksWithinSameColumn(sourceColumn, task, newOrderIndex);
         } else {
-            // If task is moving to a different column
-            List<Task> tasksInSourceColumn = taskRepository.findByColumnIdOrderByOrderIndex(sourceColumn.getId());
-            List<Task> tasksInDestinationColumn = taskRepository.findByColumnIdOrderByOrderIndex(destinationColumn.getId());
-
-            // Remove the task from the source column and update orderIndex
-            tasksInSourceColumn.remove(task);
-            for (int i = 0; i < tasksInSourceColumn.size(); i++) {
-                tasksInSourceColumn.get(i).setOrderIndex(i);
-            }
-
-            // Add the task to the destination column and update orderIndex
-            task.setColumn(destinationColumn);
-            tasksInDestinationColumn.add(newOrderIndex, task);
-            for (int i = 0; i < tasksInDestinationColumn.size(); i++) {
-                tasksInDestinationColumn.get(i).setOrderIndex(i);
-            }
+            System.out.println("Task is moving to a different column");
+            moveTaskToDifferentColumn(sourceColumn, destinationColumn, task, newOrderIndex);
         }
 
-        // Save changes
-        return taskRepository.save(task);
+        task.setOrderIndex(newOrderIndex);
+        System.out.println("Updated orderIndex: " + task.getOrderIndex());
+
+        Task savedTask = taskRepository.save(task);
+        taskRepository.flush();
+
+        System.out.println("Task saved with new orderIndex: " + savedTask.getOrderIndex());
+
+        return savedTask;
     }
+
+    private void reorderTasksWithinSameColumn(Column column, Task task, int newOrderIndex) {
+        List<Task> tasksInSameColumn = taskRepository.findByColumnIdOrderByOrderIndex(column.getId());
+
+        System.out.println("Before reordering, tasks in column:");
+        for (Task t : tasksInSameColumn) {
+            System.out.println("Task: " + t.getTitle() + ", orderIndex: " + t.getOrderIndex());
+        }
+
+        tasksInSameColumn.remove(task);
+        tasksInSameColumn.add(newOrderIndex, task);
+
+        System.out.println("After reordering, tasks in column:");
+        for (Task t : tasksInSameColumn) {
+            System.out.println("Task: " + t.getTitle() + ", orderIndex: " + t.getOrderIndex());
+        }
+
+        System.out.println("Reassigning order indexes after reordering:");
+        for (int i = 0; i < tasksInSameColumn.size(); i++) {
+            tasksInSameColumn.get(i).setOrderIndex(i);
+            System.out.println("Task: " + tasksInSameColumn.get(i).getTitle() + " new orderIndex: " + i);
+        }
+    }
+
+
+    private void moveTaskToDifferentColumn(Column sourceColumn, Column destinationColumn, Task task, int newOrderIndex) {
+        List<Task> tasksInSourceColumn = taskRepository.findByColumnIdOrderByOrderIndex(sourceColumn.getId());
+        List<Task> tasksInDestinationColumn = taskRepository.findByColumnIdOrderByOrderIndex(destinationColumn.getId());
+
+        System.out.println("Tasks in source column before removal:");
+        for (Task t : tasksInSourceColumn) {
+            System.out.println("Task: " + t.getTitle() + ", orderIndex: " + t.getOrderIndex());
+        }
+
+        tasksInSourceColumn.remove(task);
+        System.out.println("Task removed from source column");
+
+        System.out.println("Tasks in source column after removal:");
+        for (Task t : tasksInSourceColumn) {
+            System.out.println("Task: " + t.getTitle() + ", orderIndex: " + t.getOrderIndex());
+        }
+
+        System.out.println("Reassigning order indexes for tasks in source column:");
+        for (int i = 0; i < tasksInSourceColumn.size(); i++) {
+            tasksInSourceColumn.get(i).setOrderIndex(i);
+            System.out.println("Task: " + tasksInSourceColumn.get(i).getTitle() + " new orderIndex in source column: " + i);
+        }
+
+        System.out.println("Tasks in destination column before adding:");
+        for (Task t : tasksInDestinationColumn) {
+            System.out.println("Task: " + t.getTitle() + ", orderIndex: " + t.getOrderIndex());
+        }
+
+        task.setColumn(destinationColumn);
+        tasksInDestinationColumn.add(newOrderIndex, task);
+        System.out.println("Task added to destination column with new orderIndex");
+
+        System.out.println("Tasks in destination column after adding:");
+        for (Task t : tasksInDestinationColumn) {
+            System.out.println("Task: " + t.getTitle() + ", orderIndex: " + t.getOrderIndex());
+        }
+
+        System.out.println("Reassigning order indexes for tasks in destination column:");
+        for (int i = 0; i < tasksInDestinationColumn.size(); i++) {
+            tasksInDestinationColumn.get(i).setOrderIndex(i);
+            System.out.println("Task: " + tasksInDestinationColumn.get(i).getTitle() + " new orderIndex in destination column: " + i);
+        }
+    }
+
+
+
+
+
 
 }
 
