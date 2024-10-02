@@ -5,22 +5,39 @@ import './App.css';
 
 
 const App = () => {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false); // State to manage settings modal
+    const [searchText, setSearchText] = useState('');
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-  return (
-      <div className="app-container">
-          <div className="header-section">
-              <h1>Easy Kanban</h1>
-              <button className="settings-button" onClick={() => setIsSettingsOpen(true)}>
-                  Settings
-              </button>
-              <Board />
-              {isSettingsOpen && (
-                  <SettingsModal onClose={() => setIsSettingsOpen(false)} />
-              )}
-          </div>
-      </div>
-  );
+    const handleSearchChange = (event) => {
+        setSearchText(event.target.value);
+    };
+
+    return (
+        <div className="App">
+            <header className="app-header">
+                <h1>Kanban Board</h1>
+                <div className="search-settings">
+                    <input
+                        type="text"
+                        placeholder="Search tasks..."
+                        value={searchText}
+                        onChange={handleSearchChange}
+                        className="search-bar"
+                    />
+
+                    <button className="settings-button" onClick={() => setIsSettingsOpen(true)}>
+                        Settings
+                    </button>
+                </div>
+
+                {isSettingsOpen && (
+                    <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+                )}
+            </header>
+
+            <Board searchText={searchText} />
+        </div>
+    );
 };
 
 export default App;

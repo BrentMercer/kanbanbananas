@@ -44,10 +44,13 @@
   flex-direction: column;
 }
 
-.settings-button {
+.search-settings {
   position: absolute;
   top: 20px;
   right: 20px;
+}
+
+.settings-button {
   width: 80px;
   height: 40px;
   color: #fff;
@@ -60,6 +63,9 @@
 
 .settings-button:hover {
   background-color: #0056b3;
+}
+.search-bar{
+  padding: 10px 15px;
 }
 .header-section{
   position: fixed;

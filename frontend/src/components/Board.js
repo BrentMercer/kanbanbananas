@@ -13,7 +13,7 @@ import './TaskDetailModal.css';
 import taskService from '../services/taskService.js';
 import boardService from '../services/boardService.js';
 
-const Board = () => {
+const Board = ({ searchText }) => {
     const [columns, setColumns] = useState([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isCustomizeColumnsOpen, setIsCustomizeColumnsOpen] = useState(false);
@@ -260,7 +260,14 @@ const Board = () => {
     };
 
 
-    console.log("Task being passed to modal:", selectedTask);
+    // console.log("Task being passed to modal:", selectedTask);
+
+    const filterTasks = (tasks) => {
+        return tasks.filter(task =>
+            task.title.toLowerCase().includes(searchText.toLowerCase()) ||
+            task.details.toLowerCase().includes(searchText.toLowerCase())
+        );
+    };
 
     return (
         <DragDropContext
@@ -276,7 +283,7 @@ const Board = () => {
                             <Column
                                 key={column.id}
                                 column={column}
-                                tasks={column.tasks}
+                                tasks={filterTasks(column.tasks)}
                                 openTaskModal={openTaskModal}
                                 openTaskDetailModal={openTaskDetailModal}
                             />
@@ -284,9 +291,9 @@ const Board = () => {
                     })}
                 </div>
 
-                <button className="settings-button" onClick={function () { setIsSettingsOpen(true); }}>
-                    Settings
-                </button>
+                {/*<button className="settings-button" onClick={function () { setIsSettingsOpen(true); }}>*/}
+                {/*    Settings*/}
+                {/*</button>*/}
 
                 {isSettingsOpen && (
                     <SettingsModal
