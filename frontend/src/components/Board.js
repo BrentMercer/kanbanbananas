@@ -12,8 +12,9 @@ import './Task.css';
 import './TaskDetailModal.css';
 import taskService from '../services/taskService.js';
 import boardService from '../services/boardService.js';
+import { jsPDF } from 'jspdf';
 
-const Board = ({ searchText }) => {
+const Board = ({ searchText, onColumnsFetched  }) => {
     const [columns, setColumns] = useState([]);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isCustomizeColumnsOpen, setIsCustomizeColumnsOpen] = useState(false);
@@ -36,6 +37,7 @@ const Board = ({ searchText }) => {
                     })),
                 }));
                 setColumns(fetchedColumns);
+                onColumnsFetched(fetchedColumns);
             })
             .catch(error => {
                 console.error('Error fetching board data:', error);

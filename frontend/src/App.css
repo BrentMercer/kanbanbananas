@@ -71,3 +71,11 @@
   position: fixed;
   width: 100%;
 }
+.reports-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  margin-left: 10px;
+  border: none;
+  cursor: pointer;
+}
