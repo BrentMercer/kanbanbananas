@@ -1,43 +1,65 @@
 import React, { useState } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import './CustomizeColumnsModal.css';
-import dragIcon from './images/drag-resized.png';
+import axios from 'axios';
 
-const CustomizeColumnsModal = ({ columns, onClose, setColumns }) => {
+const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
     const [newColumnName, setNewColumnName] = useState('');
 
-    // Handle reordering columns
-    const onDragEnd = (result) => {
-        const { destination, source } = result;
-
-        if (!destination) return;
-
-        const reorderedColumns = Array.from(columns);
-        const [movedColumn] = reorderedColumns.splice(source.index, 1);
-        reorderedColumns.splice(destination.index, 0, movedColumn);
-
-        setColumns(reorderedColumns);
-    };
-
-    const addColumn = () => {
+    // Function to handle adding a new column
+    const addColumn = async () => {
         if (newColumnName.trim()) {
-            const newColumn = { id: `col-${Date.now()}`, title: newColumnName, tasks: [] };
-            setColumns([...columns, newColumn]); // Add new column at the top
-            setNewColumnName(''); // Reset input field
+            try {
+                const columnData = { title: newColumnName, orderIndex: columns.length };
+                const response = await axios.post(`/boards/1/board_columns`, columnData); // Replace `1` with your board ID
+                setColumns([...columns, response.data]);
+                setNewColumnName('');
+            } catch (error) {
+                console.error("Error adding column:", error);
+            }
         }
     };
 
-    const renameColumn = (index, newTitle) => {
-        const updatedColumns = columns.map((column, i) =>
-            i === index ? { ...column, title: newTitle } : column
-        );
-        setColumns(updatedColumns);
+    // Function to handle renaming a column
+    const renameColumn = async (index, newTitle) => {
+        const columnToRename = columns[index];
+        if (newTitle.trim() && columnToRename.title !== newTitle) {
+            try {
+                const updatedColumn = { ...columnToRename, title: newTitle };
+                await axios.put(`/board_columns/${columnToRename.id}`, updatedColumn);
+                const updatedColumns = columns.map((column, i) =>
+                    i === index ? { ...column, title: newTitle } : column
+                );
+                setColumns(updatedColumns);
+            } catch (error) {
+                console.error("Error renaming column:", error);
+            }
+        }
+    };
+
+    // Function to handle deleting a column
+    const deleteColumn = async (columnId) => {
+        try {
+            await axios.delete(`/board_columns/${columnId}`);
+            const updatedColumns = columns.filter(column => column.id !== columnId);
+            setColumns(updatedColumns);
+        } catch (error) {
+            console.error("Error deleting column:", error);
+        }
+    };
+
+    // Function to handle saving all changes and closing the modal
+    const handleSaveAndClose = async () => {
+        try {
+            onClose(); // Close the modal after saving
+        } catch (error) {
+            console.error("Error saving columns:", error);
+        }
     };
 
     return (
         <div className="customize-overlay">
             <div className="customize-modal">
-                <h2>Customize Board</h2>
+                <h2>Customize Columns</h2>
 
                 {/* Add New Column */}
                 <input
@@ -48,42 +70,23 @@ const CustomizeColumnsModal = ({ columns, onClose, setColumns }) => {
                 />
                 <button onClick={addColumn}>Add Column</button>
 
-                {/* Column List for Reordering */}
-                <DragDropContext onDragEnd={onDragEnd}>
-                    <Droppable droppableId="columns">
-                        {(provided) => (
-                            <ul className="column-list" ref={provided.innerRef} {...provided.droppableProps}>
-                                {columns.map((column, index) => (
-                                    <Draggable key={column.id} draggableId={column.id} index={index}>
-                                        {(provided) => (
-                                            <li
-                                                className="column-item"
-                                                ref={provided.innerRef}
-                                                {...provided.draggableProps}
-                                                {...provided.dragHandleProps}
-                                            >
-                                                <div className="drag-icon">
-                                                    <img src={dragIcon} alt="Drag Icon" />
-                                                </div>
-                                                <input
-                                                    type="text"
-                                                    value={column.title}
-                                                    onChange={(e) => renameColumn(index, e.target.value)}
-                                                />
-                                            </li>
-                                        )}
-                                    </Draggable>
-                                ))}
-                                {provided.placeholder}
-                            </ul>
-                        )}
-                    </Droppable>
-                </DragDropContext>
+                {/* Display Current Columns */}
+                <ul className="column-list">
+                    {columns.map((column, index) => (
+                        <li key={column.id} className="column-item">
+                            <input
+                                type="text"
+                                value={column.title}
+                                onChange={(e) => renameColumn(index, e.target.value)}
+                                placeholder="Column title"
+                            />
+                            <button onClick={() => deleteColumn(column.id)}>Delete</button>
+                        </li>
+                    ))}
+                </ul>
 
-                {/* Close button */}
-                <button className="close-button" onClick={onClose}>
-                    Close
-                </button>
+                {/* Save and Close Button */}
+                <button onClick={handleSaveAndClose} className="close-button">Save and Close</button>
             </div>
         </div>
     );

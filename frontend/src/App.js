@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Board from './components/Board';
 import SettingsModal from "./components/SettingsModal";
+import CustomizeColumnsModal from "./components/CustomizeColumnsModal";
 import './App.css';
 import { jsPDF } from 'jspdf';
 
 const App = () => {
     const [searchText, setSearchText] = useState('');
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isCustomizeColumnsOpen, setIsCustomizeColumnsOpen] = useState(false);
     const [columns, setColumns] = useState([]);
 
     const handleSearchChange = (event) => {
@@ -68,7 +70,17 @@ const App = () => {
                 </div>
 
                 {isSettingsOpen && (
-                    <SettingsModal onClose={() => setIsSettingsOpen(false)} />
+                    <SettingsModal
+                        onClose={() => setIsSettingsOpen(false)}
+                        openCustomizeBoardModal={() => setIsCustomizeColumnsOpen(true)}
+                    />
+                )}
+                {isCustomizeColumnsOpen && (
+                    <CustomizeColumnsModal
+                        columns={columns}
+                        setColumns={setColumns}
+                        onClose={() => setIsCustomizeColumnsOpen(false)} // Pass function to close Customize Columns Modal
+                    />
                 )}
             </header>
 
