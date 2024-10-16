@@ -23,11 +23,9 @@ const NewTaskModal = ({ columnId, addTask, task, onClose  }) => {
     const handleSaveTask = () => {
         if (title.trim()) {
             if (task) {
-                // Edit existing task
                 const updatedTask = { ...task, title, details };
                 addTask(columnId, updatedTask);
             } else {
-                // Create new task with a unique ID
                 const newTask = { id: `task-${Date.now()}`, title, details };
                 addTask(columnId, newTask);
             }
@@ -47,11 +45,14 @@ const NewTaskModal = ({ columnId, addTask, task, onClose  }) => {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Task Title"
+                    maxLength={30}
+
                 />
                 <textarea
                     value={details}
                     onChange={(e) => setDetails(e.target.value)}
                     placeholder="Task Details"
+                    maxLength={1000}
                 />
                 <button onClick={handleSaveTask}>{task ? 'Save Changes' : 'Add Task'}</button>
                 <button className="close-button" onClick={onClose}>

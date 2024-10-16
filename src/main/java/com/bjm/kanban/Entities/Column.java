@@ -35,4 +35,11 @@ public class Column {
     @Setter
     @JsonManagedReference
     private List<Task> tasks = new ArrayList<>();
+
+
+    public Column(String title, int orderIndex, Board board) {
+        this.title = title;
+        this.orderIndex = orderIndex;
+        this.board = board;
+    }
 }

@@ -1,7 +1,13 @@
 package com.bjm.kanban.DTO;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 public class ColumnDTO {
     private Long id;
+
+    @NotBlank(message = "Title cannot be blank")
+    @Size(max = 20, message = "Title must be less than 20 characters")
     private String title;
     private int orderIndex;
 

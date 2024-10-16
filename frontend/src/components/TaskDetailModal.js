@@ -13,18 +13,20 @@ const TaskDetailModal = ({ task, onClose, onEdit, onDelete }) => {
     }, [task]);
 
     const handleSave = async  () => {
-        if (!editedTitle.trim() || !editedDetails.trim()) {
+        // Remove spaces from beginning and end, and remove double spaces before save.
+        const trimmedTitle = editedTitle.trim().replace(/\s+/g, ' ');
+        const trimmedDetails = editedDetails.trim().replace(/\s+/g, ' ');
+        if (!trimmedTitle || !trimmedDetails) {
             alert("Task title and details cannot be empty.");
             return;
         }
-        const updatedTask = { ...task, title: editedTitle, details: editedDetails };
+        const updatedTask = { ...task, title: trimmedTitle, details: trimmedDetails };
         console.log("Saving task with updated details:", updatedTask);
         await onEdit(updatedTask);
         onClose();
     };
 
 
-    // Handle task deletion
     const handleDelete = () => {
         setIsConfirmDeleteOpen(true);
     };
@@ -44,12 +46,18 @@ const TaskDetailModal = ({ task, onClose, onEdit, onDelete }) => {
                             value={editedTitle}
                             onChange={(e) => setEditedTitle(e.target.value)}
                             className="new-task-modal-input"
+                            maxLength={30}
+                            placeholder="Task Title"
                         />
+                        <small>{editedTitle.length}/{30}</small>
                         <textarea
                             value={editedDetails}
                             onChange={(e) => setEditedDetails(e.target.value)}
                             className="new-task-modal-textarea"
+                            maxLength={1000}
+                            placeholder="Task Details"
                         />
+                        <small>{editedDetails.length}/{1000}</small>
                     </>
                 ) : (
                     <>

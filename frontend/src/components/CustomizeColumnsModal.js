@@ -5,12 +5,11 @@ import axios from 'axios';
 const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
     const [newColumnName, setNewColumnName] = useState('');
 
-    // Function to handle adding a new column
     const addColumn = async () => {
         if (newColumnName.trim()) {
             try {
                 const columnData = { title: newColumnName, orderIndex: columns.length };
-                const response = await axios.post(`/boards/1/board_columns`, columnData); // Replace `1` with your board ID
+                const response = await axios.post(`/boards/1/board_columns`, columnData);
                 setColumns([...columns, response.data]);
                 setNewColumnName('');
             } catch (error) {
@@ -19,7 +18,7 @@ const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
         }
     };
 
-    // Function to handle renaming a column
+
     const renameColumn = async (index, newTitle) => {
         const columnToRename = columns[index];
         if (newTitle.trim() && columnToRename.title !== newTitle) {
@@ -36,7 +35,6 @@ const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
         }
     };
 
-    // Function to handle deleting a column
     const deleteColumn = async (columnId) => {
         try {
             await axios.delete(`/board_columns/${columnId}`);
@@ -45,12 +43,12 @@ const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
         } catch (error) {
             console.error("Error deleting column:", error);
         }
+        onClose();
     };
 
-    // Function to handle saving all changes and closing the modal
     const handleSaveAndClose = async () => {
         try {
-            onClose(); // Close the modal after saving
+            onClose();
         } catch (error) {
             console.error("Error saving columns:", error);
         }
@@ -61,7 +59,6 @@ const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
             <div className="customize-modal">
                 <h2>Customize Columns</h2>
 
-                {/* Add New Column */}
                 <input
                     type="text"
                     value={newColumnName}
@@ -70,7 +67,6 @@ const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
                 />
                 <button onClick={addColumn}>Add Column</button>
 
-                {/* Display Current Columns */}
                 <ul className="column-list">
                     {columns.map((column, index) => (
                         <li key={column.id} className="column-item">
@@ -79,13 +75,13 @@ const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
                                 value={column.title}
                                 onChange={(e) => renameColumn(index, e.target.value)}
                                 placeholder="Column title"
+                                maxLength={20}
                             />
                             <button onClick={() => deleteColumn(column.id)}>Delete</button>
                         </li>
                     ))}
                 </ul>
 
-                {/* Save and Close Button */}
                 <button onClick={handleSaveAndClose} className="close-button">Save and Close</button>
             </div>
         </div>

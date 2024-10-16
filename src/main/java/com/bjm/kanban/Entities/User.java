@@ -2,10 +2,12 @@ package com.bjm.kanban.Entities;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Getter
-@Table(name = "user")
+@Setter
+@Table(name = "users")
 public class User {
 
     @Id

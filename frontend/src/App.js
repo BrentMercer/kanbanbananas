@@ -10,9 +10,15 @@ const App = () => {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isCustomizeColumnsOpen, setIsCustomizeColumnsOpen] = useState(false);
     const [columns, setColumns] = useState([]);
+    const [timeForRefresh, setTimeForRefresh] = useState(0);
 
     const handleSearchChange = (event) => {
         setSearchText(event.target.value);
+    };
+
+    const handleModalClose = () => {
+        setIsCustomizeColumnsOpen(false);
+        setTimeForRefresh(prevKey => prevKey + 1);
     };
 
     const generateReport = () => {
@@ -29,14 +35,14 @@ const App = () => {
 
         columns.forEach((column) => {
             doc.setFontSize(14);
-            doc.text(`Column: ${column.title}`, 10, yPosition);
+            doc.text(`${column.title}`, 10, yPosition);
             yPosition += 10;
 
             column.tasks.forEach((task, index) => {
                 doc.setFontSize(12);
-                doc.text(`${index + 1}. Title: ${task.title}`, 10, yPosition);
+                doc.text(`${index + 1}. ${task.title}`, 10, yPosition);
                 yPosition += 5;
-                doc.text(`   Details: ${task.details}`, 10, yPosition);
+                doc.text(`   ${task.details}`, 10, yPosition);
                 yPosition += 10;
             });
 
@@ -79,7 +85,7 @@ const App = () => {
                     <CustomizeColumnsModal
                         columns={columns}
                         setColumns={setColumns}
-                        onClose={() => setIsCustomizeColumnsOpen(false)} // Pass function to close Customize Columns Modal
+                        onClose={handleModalClose}
                     />
                 )}
             </header>
