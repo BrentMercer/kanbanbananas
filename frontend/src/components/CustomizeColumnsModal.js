@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './CustomizeColumnsModal.css';
 import axios from 'axios';
+import axiosInstance from "../services/axiosInstance";
 
 const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
     const [newColumnName, setNewColumnName] = useState('');
@@ -9,7 +10,7 @@ const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
         if (newColumnName.trim()) {
             try {
                 const columnData = { title: newColumnName, orderIndex: columns.length };
-                const response = await axios.post(`/boards/1/board_columns`, columnData);
+                const response = await axiosInstance.post(`/boards/1/board_columns`, columnData);
                 setColumns([...columns, response.data]);
                 setNewColumnName('');
             } catch (error) {
@@ -24,7 +25,7 @@ const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
         if (newTitle.trim() && columnToRename.title !== newTitle) {
             try {
                 const updatedColumn = { ...columnToRename, title: newTitle };
-                await axios.put(`/board_columns/${columnToRename.id}`, updatedColumn);
+                await axiosInstance.put(`/board_columns/${columnToRename.id}`, updatedColumn);
                 const updatedColumns = columns.map((column, i) =>
                     i === index ? { ...column, title: newTitle } : column
                 );
@@ -37,7 +38,7 @@ const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
 
     const deleteColumn = async (columnId) => {
         try {
-            await axios.delete(`/board_columns/${columnId}`);
+            await axiosInstance.delete(`/board_columns/${columnId}`);
             const updatedColumns = columns.filter(column => column.id !== columnId);
             setColumns(updatedColumns);
         } catch (error) {

@@ -13,6 +13,7 @@ import './TaskDetailModal.css';
 import taskService from '../services/taskService.js';
 import boardService from '../services/boardService.js';
 import { jsPDF } from 'jspdf';
+import axiosInstance from "../services/axiosInstance";
 
 const Board = ({ searchText, onColumnsFetched  }) => {
     const [columns, setColumns] = useState([]);
@@ -25,7 +26,7 @@ const Board = ({ searchText, onColumnsFetched  }) => {
 
 
     useEffect(() => {
-        axios.get('/boards/1')
+        axiosInstance.get('/boards/1')
             .then(response => {
                 console.log("Fetched Board Data:", response.data)
                 const fetchedColumns = response.data.columns.map((column) => ({
@@ -55,7 +56,7 @@ const Board = ({ searchText, onColumnsFetched  }) => {
         const targetColumn = columns.find(column => column.id === columnId);
         const newOrderIndex = targetColumn.tasks.length;
 
-        axios.post(`/tasks`, {
+        axiosInstance.post(`/tasks`, {
             title: newTask.title,
             details: newTask.details,
             orderIndex: newOrderIndex,
