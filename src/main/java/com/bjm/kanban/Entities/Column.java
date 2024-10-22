@@ -17,6 +17,7 @@ import java.util.List;
 public class Column {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter
     private Long id;
 
     @Setter
