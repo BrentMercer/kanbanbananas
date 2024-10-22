@@ -62,21 +62,16 @@ public class TaskServiceTest {
 
     @Test
     public void testDeleteTask() {
-        // Step 1: Prepare a task ID for deletion
         Long taskId = 1L;
 
-        // Step 2: Mock the repository to return a task when findById is called
         Task mockTask = new Task();
         mockTask.setId(taskId);
         mockTask.setTitle("Test Task");
 
-        // Ensure the mock repository returns the mock task when findById is called
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(mockTask));
 
-        // Step 3: Call the method to be tested
         taskService.deleteTask(taskId);
 
-        // Step 4: Verify that taskRepository.delete() was called with the correct task
         verify(taskRepository).delete(mockTask);
     }
 
