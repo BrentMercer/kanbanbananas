@@ -10,6 +10,8 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins(
+                        "http://localhost:3000",
+                        "http://localhost:8080",
                         "http://44.239.4.189:8080", // My AWS Lightsail static IP - http://44.239.4.189:8080
                         "http://kanbanbananas.com",
                         "http://www.kanbanbananas.com",

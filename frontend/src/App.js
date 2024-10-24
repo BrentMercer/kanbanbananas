@@ -4,6 +4,10 @@ import SettingsModal from "./components/SettingsModal";
 import CustomizeColumnsModal from "./components/CustomizeColumnsModal";
 import './App.css';
 import { jsPDF } from 'jspdf';
+import axiosInstance from "./services/axiosInstance";
+import taskService from "./services/taskService";
+import NewTaskModal from "./components/NewTaskModal";
+import TaskDetailModal from "./components/TaskDetailModal";
 
 const App = () => {
     const [searchText, setSearchText] = useState('');
@@ -11,14 +15,143 @@ const App = () => {
     const [isCustomizeColumnsOpen, setIsCustomizeColumnsOpen] = useState(false);
     const [columns, setColumns] = useState([]);
     const [timeForRefresh, setTimeForRefresh] = useState(0);
+    const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+    const [currentColumnId, setCurrentColumnId] = useState(null);
+    const [selectedTask, setSelectedTask] = useState(null);
+    const [reRenderKey, setReRenderKey] = useState(0);
+
+    useEffect(() => {
+        fetchColumns();
+    }, []);
 
     const handleSearchChange = (event) => {
         setSearchText(event.target.value);
     };
 
+    const openTaskModal = function (columnId) {
+        setCurrentColumnId(columnId);
+        setSelectedTask(null);
+        setIsTaskModalOpen(true);
+    };
+
+    const openTaskDetailModal = (task) => {
+        console.log("Opening Task Detail Modal for task:", task);
+        setSelectedTask(task);
+    };
+
     const handleModalClose = () => {
         setIsCustomizeColumnsOpen(false);
         setTimeForRefresh(prevKey => prevKey + 1);
+    };
+
+
+
+    const fetchColumns = async () => {
+        try {
+            const response = await axiosInstance.get('/boards/1');
+            const fetchedColumns = response.data.columns.map((column) => ({
+                ...column,
+                id: column.id.toString(),
+                tasks: column.tasks.map((task) => ({
+                    ...task,
+                    id: task.id.toString(),
+                })),
+            }));
+            setColumns(fetchedColumns);
+        } catch (error) {
+            console.error('Error fetching board data:', error);
+        }
+    };
+
+    const addTask = function (columnId, newTask) {
+        console.log("Task being added/updated:", newTask);
+
+        const targetColumn = columns.find(column => column.id === columnId);
+        const newOrderIndex = targetColumn.tasks.length;
+
+        axiosInstance.post(`/tasks`, {
+            title: newTask.title,
+            details: newTask.details,
+            orderIndex: newOrderIndex,
+            columnId: columnId,
+        })
+            .then((response) => {
+                const createdTask = response.data; // Task with valid ID from backend
+                console.log("Task created successfully in the backend:", createdTask);
+
+                setColumns(function (prevColumns) {
+                    return prevColumns.map(function (column) {
+                        if (column.id === columnId) {
+                            return {
+                                ...column,
+                                tasks: [...column.tasks, createdTask],
+                            };
+                        }
+                        return column;
+                    });
+                });
+                window.location.reload();
+                setReRenderKey(prevKey => prevKey + 1);
+            })
+            .catch((error) => {
+                console.error("Error creating task in the backend:", error);
+            });
+    };
+
+    const editTask = async function (task) {
+        console.log("Editing task:", task);
+        const columnId = columns.find(function (col) {
+            return col.tasks.some(function (t) {
+                return t.id === task.id;
+            });
+        }).id;
+
+        setColumns(function (prevColumns) {
+            const updatedColumns = prevColumns.map(function (column) {
+                if (column.id === columnId) {
+                    const updatedTasks = column.tasks.map(function (t) {
+                        if (t.id === task.id) {
+                            return task;
+                        } else {
+                            return t;
+                        }
+                    });
+                    return Object.assign({}, column, { tasks: updatedTasks });
+                }
+                return column;
+            });
+            return updatedColumns.slice();
+        });
+
+        try {
+            console.log("Saving task with updated details:", task);
+            await taskService.updateTask(task.id, task);
+            console.log("Task updated successfully.");
+        } catch (error) {
+            console.error("Error updating task:", error);
+        }
+
+        setIsTaskModalOpen(false);
+    };
+
+    const deleteTask = function (taskId) {
+        console.log("Deleting task with ID:", taskId);
+
+        taskService.deleteTask(taskId)
+            .then(() => {
+                console.log("Task deleted successfully from the backend");
+
+                setColumns((prevColumns) => {
+                    return prevColumns.map((column) => ({
+                        ...column,
+                        tasks: column.tasks.filter((task) => task.id !== taskId),
+                    }));
+                });
+            })
+            .catch((error) => {
+                console.error("Error deleting task from the backend:", error);
+            });
+
     };
 
     const generateReport = () => {
@@ -73,8 +206,6 @@ const App = () => {
                     <button className="settings-button" onClick={() => setIsSettingsOpen(true)}>
                         Settings
                     </button>
-
-
                 </div>
 
                 {isSettingsOpen && (
@@ -83,18 +214,45 @@ const App = () => {
                         openCustomizeBoardModal={() => setIsCustomizeColumnsOpen(true)}
                     />
                 )}
+
                 {isCustomizeColumnsOpen && (
                     <CustomizeColumnsModal
                         columns={columns}
                         setColumns={setColumns}
-                        onClose={handleModalClose}
+                        onClose={handleModalClose}  // Ensure you call fetchColumns here
+                    />
+                )}
+
+                {isTaskModalOpen && (
+                    <NewTaskModal
+                        columnId={currentColumnId}
+                        addTask={addTask}
+                        task={selectedTask}
+                        onClose={() => setIsTaskModalOpen(false)}
+                    />
+                )}
+
+                {selectedTask && (
+                    <TaskDetailModal
+                        task={selectedTask}
+                        onClose={() => setSelectedTask(null)}
+                        onEdit={editTask}
+                        onDelete={deleteTask}
                     />
                 )}
             </header>
 
-            <Board searchText={searchText} onColumnsFetched={setColumns} />
+            <Board
+                searchText={searchText}
+                columns={columns}
+                setColumns={setColumns}
+                openTaskModal={openTaskModal}
+                openTaskDetailModal={openTaskDetailModal}
+            />
+
         </div>
     );
+
 };
 
 export default App;

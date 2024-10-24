@@ -44,7 +44,6 @@ const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
         } catch (error) {
             console.error("Error deleting column:", error);
         }
-        onClose();
     };
 
     const handleSaveAndClose = async () => {

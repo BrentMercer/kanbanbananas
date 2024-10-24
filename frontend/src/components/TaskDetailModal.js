@@ -13,7 +13,6 @@ const TaskDetailModal = ({ task, onClose, onEdit, onDelete }) => {
     }, [task]);
 
     const handleSave = async  () => {
-        // Remove spaces from beginning and end, and remove double spaces before save.
         const trimmedTitle = editedTitle.trim().replace(/\s+/g, ' ');
         const trimmedDetails = editedDetails.trim().replace(/\s+/g, ' ');
         if (!trimmedTitle || !trimmedDetails) {
