@@ -54,7 +54,7 @@ const NewTaskModal = ({ columnId, addTask, task, onClose  }) => {
                     placeholder="Task Details"
                     maxLength={1000}
                 />
-                <button onClick={handleSaveTask}>{task ? 'Save Changes' : 'Add Task'}</button>
+                <button className="" onClick={handleSaveTask}>{task ? 'Save Changes' : 'Add Task'}</button>
                 <button className="close-button" onClick={onClose}>
                     Cancel
                 </button>

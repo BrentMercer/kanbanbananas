@@ -72,9 +72,8 @@ const TaskDetailModal = ({ task, onClose, onEdit, onDelete }) => {
                     {isEditMode ? (
                         <button onClick={handleSave}>Save</button>
                     ) : (
-                        <button onClick={() => setIsEditMode(true)}>Edit</button>
+                        <button onClick={() => setIsEditMode(true)}>Edit Task</button>
                     )}
-                    <button>Placeholder</button>
                     <button onClick={handleDelete}>Delete Task</button>
                 </div>
 

@@ -56,7 +56,7 @@ const App = () => {
     return (
         <div className="App">
             <header className="app-header">
-                <h1>Kanban Board</h1>
+                <h1>Kanban Bananas</h1>
                 <div className="search-settings">
                     <input
                         type="text"
@@ -66,13 +66,15 @@ const App = () => {
                         className="search-bar"
                     />
 
+                    <button className="reports-button" onClick={generateReport}>
+                        Generate Report
+                    </button>
+
                     <button className="settings-button" onClick={() => setIsSettingsOpen(true)}>
                         Settings
                     </button>
 
-                    <button className="reports-button" onClick={generateReport}>
-                        Generate Report
-                    </button>
+
                 </div>
 
                 {isSettingsOpen && (

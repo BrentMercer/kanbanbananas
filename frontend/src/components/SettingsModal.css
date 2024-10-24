@@ -22,7 +22,8 @@
     margin-bottom: 20px;
 }
 
-.close-button {
+.close-button,
+.save-button {
     background-color: #007bff;
     color: #fff;
     border: none;

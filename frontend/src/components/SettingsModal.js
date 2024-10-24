@@ -9,7 +9,7 @@ const SettingsModal = ({ onClose, openCustomizeBoardModal }) => {
 
                 <div className="settings-section">
                     <h3>Customize Board</h3>
-                    <button onClick={openCustomizeBoardModal}>Customize Columns</button>
+                    <button className="save-button" onClick={openCustomizeBoardModal}>Customize Columns</button>
                 </div>
 
                 <button className="close-button" onClick={onClose}>

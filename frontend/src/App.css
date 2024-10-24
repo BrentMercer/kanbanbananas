@@ -53,6 +53,7 @@
 .settings-button {
   width: 80px;
   height: 40px;
+  margin-left: 10px;
   color: #fff;
   background-color: #007bff;
   border: none;
