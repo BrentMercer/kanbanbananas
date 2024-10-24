@@ -35,13 +35,13 @@ public class TaskServiceTest {
 
         when(columnRepository.findById(1L)).thenReturn(java.util.Optional.of(mockColumn));
 
-        TaskDTO taskDTO = new TaskDTO();
+        TaskDTO taskDTO = new TaskDTO(); // TaskDTO
         taskDTO.setTitle("Test Task");
         taskDTO.setDetails("Test details");
         taskDTO.setOrderIndex(0);
         taskDTO.setColumnId(1L);
 
-        Task mockTask = new Task();
+        Task mockTask = new Task(); // Regular task for mocking
         mockTask.setTitle("Test Task");
         mockTask.setDetails("Test details");
         mockTask.setOrderIndex(0);
@@ -50,7 +50,6 @@ public class TaskServiceTest {
         when(taskRepository.save(any(Task.class))).thenReturn(mockTask);
 
         Task createdTask = taskService.createTask(taskDTO);
-
         assertThat(createdTask.getTitle()).isEqualTo("Test Task");
         assertThat(createdTask.getDetails()).isEqualTo("Test details");
         assertThat(createdTask.getOrderIndex()).isEqualTo(0);
@@ -58,6 +57,7 @@ public class TaskServiceTest {
 
         verify(columnRepository).findById(1L);
         verify(taskRepository).save(any(Task.class));
+
     }
 
     @Test

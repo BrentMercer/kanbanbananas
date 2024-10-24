@@ -9,7 +9,12 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://18.236.199.74:8080") // My AWS Lightsail IP - http://18.236.199.74:8080
+                .allowedOrigins(
+                        "http://44.239.4.189:8080", // My AWS Lightsail static IP - http://44.239.4.189:8080
+                        "http://kanbanbananas.com",
+                        "http://www.kanbanbananas.com",
+                        "https://kanbanbananas.com",
+                        "https://www.kanbanbananas.com")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
