@@ -29,7 +29,7 @@ const NewTaskModal = ({ columnId, addTask, task, onClose  }) => {
                 const newTask = { id: `task-${Date.now()}`, title, details };
                 addTask(columnId, newTask);
             }
-            onClose();
+            // onClose();
         }
     };
 
@@ -54,7 +54,7 @@ const NewTaskModal = ({ columnId, addTask, task, onClose  }) => {
                     placeholder="Task Details"
                     maxLength={1000}
                 />
-                <button className="" onClick={handleSaveTask}>{task ? 'Save Changes' : 'Add Task'}</button>
+                <button className="save-button" onClick={handleSaveTask}>{task ? 'Save Changes' : 'Add Task'}</button>
                 <button className="close-button" onClick={onClose}>
                     Cancel
                 </button>

@@ -26,17 +26,38 @@ const App = () => {
 
 
     useEffect(() => {
-        if (isAuthenticated) {
-            fetchColumns();
+        const storedToken = localStorage.getItem("token");
+        const storedBoardId = localStorage.getItem("boardId");
+
+        if (storedToken) {
+            console.log("Token found in localStorage. Setting authenticated state to true.");
+            setIsAuthenticated(true);
+            if (storedBoardId) {
+                setBoardId(storedBoardId);
+            }
+        } else {
+            console.log("No token found. Authentication required.");
+            setIsAuthenticated(false);
         }
-    }, [isAuthenticated]);
+    }, []);
+
+    useEffect(() => {
+        if (isAuthenticated && boardId) {
+            console.log("Authenticated and boardId is available. Fetching columns.");
+            fetchColumns(boardId);
+        }
+    }, [isAuthenticated, boardId]);
 
 
-    const handleLogin = (boardIdFromLogin) => {
+
+    const handleLogin = (boardIdFromLogin, jwtToken) => {
         console.log("Logged in with boardId:", boardIdFromLogin);
         setIsAuthenticated(true);
         setIsLoginModalOpen(false);
         setBoardId(boardIdFromLogin);
+
+        localStorage.setItem("token", jwtToken);
+        localStorage.setItem("boardId", boardIdFromLogin);
 
         fetchColumns(boardIdFromLogin);
     };
@@ -50,8 +71,12 @@ const App = () => {
     };
 
     const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("boardId");
+        
         setIsAuthenticated(false);
         setIsLoginModalOpen(true);
+        setBoardId(null);
     };
 
 
@@ -246,7 +271,7 @@ const App = () => {
                     <button className="logout-button" onClick={handleLogout}>Logout</button>
                 </div>
 
-                {isLoginModalOpen && (
+                {!isAuthenticated && isLoginModalOpen && (
                     <LoginModal
                         onClose={() => setIsLoginModalOpen(false)}
                         onLogin={handleLogin}

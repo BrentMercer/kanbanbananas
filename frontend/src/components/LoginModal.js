@@ -76,9 +76,9 @@ const LoginModal = ({ onClose, onLogin }) => {
                     {isLogin ? 'Need an account? Register' : 'Already have an account? Login'}
                 </button>
 
-                <button className="auth-close" onClick={onClose}>
-                    Close
-                </button>
+                {/*<button className="auth-close" onClick={onClose}>*/}
+                {/*    Close*/}
+                {/*</button>*/}
             </div>
         </div>
     );

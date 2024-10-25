@@ -9,6 +9,7 @@ import com.bjm.kanban.Services.UserService;
 import com.bjm.kanban.Security.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -79,23 +80,32 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest authRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
-        );
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword())
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtUtils.generateToken(authentication);
+            // Generate JWT token
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String token = jwtUtils.generateToken(authentication);
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        User user = userService.getUserByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            User user = userService.getUserByEmail(userDetails.getUsername())
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + userDetails.getUsername()));
 
-        Board userBoard = boardService.getBoardByUserId(user.getId());
+            Board userBoard = boardService.getBoardByUserId(user.getId());
+            Long boardId = userBoard.getId();
 
-        Long boardId = userBoard.getId();
-
-        return ResponseEntity.ok(new AuthResponse(token, userBoard, boardId));
+            return ResponseEntity.ok(new AuthResponse(token, userBoard, boardId));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new AuthResponse("Board not found", null, null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new AuthResponse("Error logging in", null, null));
+        }
     }
+
 
 
 }

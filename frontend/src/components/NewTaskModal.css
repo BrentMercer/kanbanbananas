@@ -28,18 +28,22 @@
     padding: 8px;
     border-radius: 4px;
     border: 1px solid #ccc;
+    box-sizing: content-box;
 }
 .new-task-modal textarea {
     height: 100%;
     min-height: 100px;
 }
 
-
-.close-button {
+.close-button,
+.save-button {
     background-color: #007bff;
     color: #fff;
     border: none;
     padding: 10px 15px;
     cursor: pointer;
     border-radius: 4px;
+}
+.close-button {
+    margin-left: 10px;
 }
