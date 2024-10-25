@@ -29,6 +29,14 @@ public class BoardService {
 
     private static final Logger logger = LoggerFactory.getLogger(BoardService.class);
 
+    public Board createBoard(Board board) {
+        return boardRepository.save(board);
+    }
+
+    public Board getBoardByUserId(Long userId) {
+        return boardRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Board not found for user with ID: " + userId));
+    }
 
     public Board getBoardWithColumnsAndTasks(Long boardId) {
         return boardRepository.findById(boardId)

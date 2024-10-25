@@ -12,4 +12,6 @@ import java.util.Optional;
 public interface BoardRepository extends JpaRepository<Board, Long> {
     @Query("SELECT b FROM Board b LEFT JOIN FETCH b.columns c LEFT JOIN FETCH c.tasks WHERE b.id = :id")
     Optional<Board> findByIdWithColumnsAndTasks(@Param("id") Long id);
+
+    Optional<Board> findByUserId(Long userId);
 }

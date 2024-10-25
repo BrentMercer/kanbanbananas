@@ -29,4 +29,12 @@ public class Task {
     @JsonBackReference
     private Column column;
 
+    public Task(){}
+
+    public Task(String title, String details, int orderIndex, Column column) {
+        this.title = title;
+        this.details = details;
+        this.orderIndex = orderIndex;
+        this.column = column;
+    }
 }

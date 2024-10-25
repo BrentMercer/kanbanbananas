@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Board from './components/Board';
 import SettingsModal from "./components/SettingsModal";
 import CustomizeColumnsModal from "./components/CustomizeColumnsModal";
+import LoginModal from "./components/LoginModal";
 import './App.css';
 import { jsPDF } from 'jspdf';
 import axiosInstance from "./services/axiosInstance";
@@ -10,6 +11,8 @@ import NewTaskModal from "./components/NewTaskModal";
 import TaskDetailModal from "./components/TaskDetailModal";
 
 const App = () => {
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [isCustomizeColumnsOpen, setIsCustomizeColumnsOpen] = useState(false);
@@ -19,10 +22,38 @@ const App = () => {
     const [currentColumnId, setCurrentColumnId] = useState(null);
     const [selectedTask, setSelectedTask] = useState(null);
     const [reRenderKey, setReRenderKey] = useState(0);
+    const [boardId, setBoardId] = useState(null);
+
 
     useEffect(() => {
-        fetchColumns();
-    }, []);
+        if (isAuthenticated) {
+            fetchColumns();
+        }
+    }, [isAuthenticated]);
+
+
+    const handleLogin = (boardIdFromLogin) => {
+        console.log("Logged in with boardId:", boardIdFromLogin);
+        setIsAuthenticated(true);
+        setIsLoginModalOpen(false);
+        setBoardId(boardIdFromLogin);
+
+        fetchColumns(boardIdFromLogin);
+    };
+
+
+
+    const handleRegister = (email, password) => {
+        console.log("Registering user:", { email, password });
+        setIsAuthenticated(true);
+        setIsLoginModalOpen(false);
+    };
+
+    const handleLogout = () => {
+        setIsAuthenticated(false);
+        setIsLoginModalOpen(true);
+    };
+
 
     const handleSearchChange = (event) => {
         setSearchText(event.target.value);
@@ -46,9 +77,11 @@ const App = () => {
 
 
 
-    const fetchColumns = async () => {
+    const fetchColumns = async (boardId) => {
+        console.log("Fetching columns for boardId:", boardId);
         try {
-            const response = await axiosInstance.get('/boards/1');
+            const response = await axiosInstance.get(`/boards/${boardId}`);
+            console.log("Columns data:", response.data.columns);
             const fetchedColumns = response.data.columns.map((column) => ({
                 ...column,
                 id: column.id.toString(),
@@ -62,6 +95,9 @@ const App = () => {
             console.error('Error fetching board data:', error);
         }
     };
+
+
+
 
     const addTask = function (columnId, newTask) {
         console.log("Task being added/updated:", newTask);
@@ -189,6 +225,7 @@ const App = () => {
     return (
         <div className="App">
             <header className="app-header">
+                <span className="board-id">Board ID: {boardId ? boardId : 'No board loaded'}</span>
                 <h1>Kanban Bananas</h1>
                 <div className="search-settings">
                     <input
@@ -206,7 +243,16 @@ const App = () => {
                     <button className="settings-button" onClick={() => setIsSettingsOpen(true)}>
                         Settings
                     </button>
+                    <button className="logout-button" onClick={handleLogout}>Logout</button>
                 </div>
+
+                {isLoginModalOpen && (
+                    <LoginModal
+                        onClose={() => setIsLoginModalOpen(false)}
+                        onLogin={handleLogin}
+                        onRegister={handleRegister}
+                    />
+                )}
 
                 {isSettingsOpen && (
                     <SettingsModal
@@ -219,7 +265,7 @@ const App = () => {
                     <CustomizeColumnsModal
                         columns={columns}
                         setColumns={setColumns}
-                        onClose={handleModalClose}  // Ensure you call fetchColumns here
+                        onClose={handleModalClose}
                     />
                 )}
 
@@ -241,15 +287,15 @@ const App = () => {
                     />
                 )}
             </header>
-
-            <Board
-                searchText={searchText}
-                columns={columns}
-                setColumns={setColumns}
-                openTaskModal={openTaskModal}
-                openTaskDetailModal={openTaskDetailModal}
-            />
-
+            {isAuthenticated && (
+                <Board
+                    searchText={searchText}
+                    columns={columns}
+                    setColumns={setColumns}
+                    openTaskModal={openTaskModal}
+                    openTaskDetailModal={openTaskDetailModal}
+                />
+            )}
         </div>
     );
 

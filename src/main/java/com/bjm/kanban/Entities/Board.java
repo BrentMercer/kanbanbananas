@@ -25,9 +25,11 @@ public class Board {
 
     @Setter
     @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
+    @Setter
     private List<Column> columns = new ArrayList<>();
 }

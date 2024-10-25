@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -19,16 +20,27 @@ public class BoardController {
     @Autowired
     private BoardService boardService;
 
-    // Get a specific board with columns and tasks
     @GetMapping("/{id}")
     public ResponseEntity<Board> getBoardById(@PathVariable Long id) {
         Board board = boardService.getBoardWithColumnsAndTasks(id);
+
         if (board != null) {
+            if (board.getColumns() == null) {
+                board.setColumns(new ArrayList<>());
+            }
+
+            board.getColumns().forEach(column -> {
+                if (column.getTasks() == null) {
+                    column.setTasks(new ArrayList<>());
+                }
+            });
+
             return new ResponseEntity<>(board, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
 
 
     @PostMapping(value = "/{boardId}/board_columns", consumes = "application/json", produces = "application/json")
