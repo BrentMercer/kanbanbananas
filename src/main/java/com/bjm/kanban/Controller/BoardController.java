@@ -63,28 +63,24 @@ public class BoardController {
         return column != null ? new ResponseEntity<>(column, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    // Delete a column
     @DeleteMapping("/board_columns/{columnId}")
     public ResponseEntity<Void> deleteColumn(@PathVariable Long columnId) {
         boardService.deleteColumn(columnId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    // Add a new task to a column
     @PostMapping("/board_columns/{columnId}/tasks")
     public ResponseEntity<Task> addTaskToColumn(@PathVariable Long columnId, @RequestBody Task task) {
         Task createdTask = boardService.addTaskToColumn(columnId, task);
         return new ResponseEntity<>(createdTask, HttpStatus.CREATED);
     }
 
-    // Update a task
     @PutMapping("/tasks/{taskId}")
     public ResponseEntity<Task> updateTask(@PathVariable Long taskId, @RequestBody Task updatedTask) {
         Task task = boardService.updateTask(taskId, updatedTask);
         return task != null ? new ResponseEntity<>(task, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    // Delete a task
     @DeleteMapping("/tasks/{taskId}")
     public ResponseEntity<Void> deleteTask(@PathVariable Long taskId) {
         boardService.deleteTask(taskId);
