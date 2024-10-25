@@ -3,19 +3,21 @@ import './CustomizeColumnsModal.css';
 import axios from 'axios';
 import axiosInstance from "../services/axiosInstance";
 
-const CustomizeColumnsModal = ({ columns, setColumns, onClose }) => {
+const CustomizeColumnsModal = ({ columns, setColumns, onClose, boardId }) => {
     const [newColumnName, setNewColumnName] = useState('');
 
     const addColumn = async () => {
-        if (newColumnName.trim()) {
+        if (newColumnName.trim() && boardId) {
             try {
                 const columnData = { title: newColumnName, orderIndex: columns.length };
-                const response = await axiosInstance.post(`/boards/1/board_columns`, columnData);
+                const response = await axiosInstance.post(`/boards/${boardId}/board_columns`, columnData);
                 setColumns([...columns, response.data]);
                 setNewColumnName('');
             } catch (error) {
                 console.error("Error adding column:", error);
             }
+        } else {
+            console.error("Board ID is undefined");
         }
     };
 

@@ -290,6 +290,7 @@ const App = () => {
                     <CustomizeColumnsModal
                         columns={columns}
                         setColumns={setColumns}
+                        boardId={boardId}
                         onClose={handleModalClose}
                     />
                 )}

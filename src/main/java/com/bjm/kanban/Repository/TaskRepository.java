@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+// Inheritance example
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 

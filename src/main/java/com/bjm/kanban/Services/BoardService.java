@@ -43,6 +43,7 @@ public class BoardService {
                 .orElseThrow(() -> new ResourceNotFoundException("Board not found with id: " + boardId));
     }
 
+    // Encapsulation example
     public Column addColumnToBoard(Long boardId, ColumnDTO columnDTO) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Board not found with id: " + boardId));

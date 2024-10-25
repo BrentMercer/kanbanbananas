@@ -77,6 +77,7 @@ public class TaskService {
         }
         task.setOrderIndex(taskDTO.getOrderIndex());
 
+        // Polymorphism example
         return taskRepository.save(task);
     }
 
