@@ -215,29 +215,41 @@ const App = () => {
 
     };
 
+    // Updated to have multiple columns
     const generateReport = () => {
         const doc = new jsPDF();
 
         doc.setFontSize(18);
         doc.text('Task Report', 10, 10);
-
         const date = new Date();
         doc.setFontSize(12);
         doc.text(`Generated on: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`, 10, 20);
 
         let yPosition = 30;
+        const columnX = 10;
+        const taskTitleX = 60;
+        const detailsX = 110;
 
+        doc.setFontSize(14);
+        doc.text('Column', columnX, yPosition);
+        doc.text('Task Title', taskTitleX, yPosition);
+        doc.text('Task Details', detailsX, yPosition);
+        yPosition += 10;
+
+        // Print column titles
         columns.forEach((column) => {
-            doc.setFontSize(14);
-            doc.text(`${column.title}`, 10, yPosition);
+            doc.setFontSize(12);
+            doc.text(column.title, columnX, yPosition);
             yPosition += 10;
 
+            // Print task titles and details
             column.tasks.forEach((task, index) => {
-                doc.setFontSize(12);
-                doc.text(`${index + 1}. ${task.title}`, 10, yPosition);
-                yPosition += 5;
-                doc.text(`   ${task.details}`, 10, yPosition);
-                yPosition += 10;
+                doc.text(`${index + 1}. ${task.title}`, taskTitleX, yPosition);
+
+                const wrappedDetails = doc.splitTextToSize(task.details, 70);
+                doc.text(wrappedDetails, detailsX, yPosition);
+
+                yPosition += 10 + (wrappedDetails.length - 1) * 7;
             });
 
             yPosition += 10;
@@ -245,6 +257,7 @@ const App = () => {
 
         doc.save('task_report.pdf');
     };
+
 
 
     return (
